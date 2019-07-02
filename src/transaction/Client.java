@@ -10,7 +10,7 @@ import java.util.Properties;
 
 public class Client {
 
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         Properties prop = new Properties();
         try {
             prop.load(new FileInputStream("conf/ddb.conf"));
@@ -62,6 +62,5 @@ public class Client {
             System.err.println("Received exception:" + e);
             System.exit(1);
         }
-
     }
 }

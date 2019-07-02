@@ -1,6 +1,7 @@
 RMIREGPORT =3345 
 PROJECTROOT = ..
-PATH = /usr/bin
+# your java path
+PATH = E:/Program Files/Java/jdk-9/bin
 all : server client
 
 server : ResourceManager.class \
