@@ -12,7 +12,7 @@ public class TransactionManagerImpl
         extends java.rmi.server.UnicastRemoteObject
         implements TransactionManager {
 
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         System.setSecurityManager(new RMISecurityManager());
 
         String rmiPort = System.getProperty("rmiPort");

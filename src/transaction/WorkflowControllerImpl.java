@@ -25,6 +25,22 @@ public class WorkflowControllerImpl
     protected ResourceManager rmCustomers = null;
     protected TransactionManager tm = null;
 
+    public WorkflowControllerImpl() throws RemoteException {
+        flightcounter = 0;
+        flightprice = 0;
+        carscounter = 0;
+        carsprice = 0;
+        roomscounter = 0;
+        roomsprice = 0;
+        flightprice = 0;
+
+        xidCounter = 1;
+
+        while (!reconnect()) {
+            // would be better to sleep a while
+        }
+    }
+
     public static void main(String args[]) {
         System.setSecurityManager(new RMISecurityManager());
 
@@ -44,24 +60,6 @@ public class WorkflowControllerImpl
             System.exit(1);
         }
     }
-
-
-    public WorkflowControllerImpl() throws RemoteException {
-        flightcounter = 0;
-        flightprice = 0;
-        carscounter = 0;
-        carsprice = 0;
-        roomscounter = 0;
-        roomsprice = 0;
-        flightprice = 0;
-
-        xidCounter = 1;
-
-        while (!reconnect()) {
-            // would be better to sleep a while
-        }
-    }
-
 
     // TRANSACTION INTERFACE
     public int start()

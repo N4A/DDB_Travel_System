@@ -8,7 +8,7 @@ import java.util.*;
  * Reservation System.
  * <p>
  * Failure reporting is done using two pieces, exceptions and boolean
- * return values.  Exceptions are used for systemy things - like
+ * return values.  Exceptions are used for system things - like
  * transactions that were forced to abort, or don't exist.  Return
  * values are used for operations that would affect the consistency of
  * the database, like the deletion of more cars than there are.

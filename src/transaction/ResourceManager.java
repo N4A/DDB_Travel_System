@@ -1,11 +1,13 @@
 package transaction;
 
+import lockmgr.DeadlockException;
+
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.rmi.server.RMIClassLoader;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
-
-import lockmgr.DeadlockException;
 
 /**
  * Interface for the Resource Manager of the Distributed Travel Reservation
@@ -16,6 +18,14 @@ import lockmgr.DeadlockException;
  */
 
 public interface ResourceManager extends Remote {
+    /**
+     * The RMI names a ResourceManager binds to.
+     */
+    public static final String RMINameFlights = "RMFlights";
+    public static final String RMINameRooms = "RMRooms";
+    public static final String RMINameCars = "RMCars";
+    public static final String RMINameCustomers = "RMCustomers";
+
     public Set getTransactions() throws RemoteException;
 
     public Collection getUpdatedRows(int xid, String tablename)
@@ -69,15 +79,4 @@ public interface ResourceManager extends Remote {
 
     public void abort(int xid) throws InvalidTransactionException,
             RemoteException;
-
-    /**
-     * The RMI names a ResourceManager binds to.
-     */
-    public static final String RMINameFlights = "RMFlights";
-
-    public static final String RMINameRooms = "RMRooms";
-
-    public static final String RMINameCars = "RMCars";
-
-    public static final String RMINameCustomers = "RMCustomers";
 }
