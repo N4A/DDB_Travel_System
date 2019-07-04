@@ -1,5 +1,6 @@
 RMIREGPORT =3345 
 PROJECTROOT = ..
+# Path = usr/bin # use java in environment
 all : server client
 
 server : ResourceManager.class \
@@ -14,7 +15,7 @@ server : ResourceManager.class \
          InvalidTransactionException.class \
          TransactionAbortedException.class
 
-client: Client.class
+client: Client.class SimpleClient.class
 
 runregistry :
 	rmiregistry -J-classpath -J$(PROJECTROOT) $(RMIREGPORT)
@@ -39,6 +40,9 @@ runwc : server
 
 runclient : client
 	java -classpath $(PROJECTROOT) -DrmiPort=$(RMIREGPORT) transaction.Client
+
+runsimpleclient : client
+	java -classpath $(PROJECTROOT) -DrmiPort=$(RMIREGPORT) transaction.SimpleClient
 
 clean :
 	$(RM) *.class
