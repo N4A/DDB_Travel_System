@@ -1,7 +1,7 @@
 package transaction;
 
-import java.rmi.*;
-import java.util.*;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
 
 /**
  * Interface for the Workflow Controller of the Distributed Travel
@@ -32,81 +32,86 @@ public interface WorkflowController extends Remote {
     //////////
     // TRANSACTION INTERFACE
     //////////
+
+    /**
+     * The RMI name a WorkflowController binds to.
+     */
+    public static final String RMIName = "WC";
+
     /**
      * Start a new transaction, and return its transaction id.
      *
      * @return A unique transaction ID > 0.  Return <=0 if server is not accepting new transactions.
-     *
      * @throws RemoteException on communications failure.
      */
     public int start()
-	throws RemoteException;
+            throws RemoteException;
+
     /**
      * Commit transaction.
      *
      * @param xid id of transaction to be committed.
      * @return true on success, false on failure.
-     *
-     * @throws RemoteException on communications failure.
+     * @throws RemoteException             on communications failure.
      * @throws TransactionAbortedException if transaction was aborted.
      * @throws InvalidTransactionException if transaction id is invalid.
      */
     public boolean commit(int xid)
-	throws RemoteException,
-	       TransactionAbortedException,
-	       InvalidTransactionException;
-    /**
-     * Abort transaction.
-     *
-     * @param xid id of transaction to be aborted.
-     *
-     * @throws RemoteException on communications failure.
-     * @throws InvalidTransactionException if transaction id is invalid.
-     */
-    public void abort(int xid)
-	throws RemoteException,
-	       InvalidTransactionException;
+            throws RemoteException,
+            TransactionAbortedException,
+            InvalidTransactionException;
 
 
     //////////
     // ADMINISTRATIVE INTERFACE
     //////////
+
+    /**
+     * Abort transaction.
+     *
+     * @param xid id of transaction to be aborted.
+     * @throws RemoteException             on communications failure.
+     * @throws InvalidTransactionException if transaction id is invalid.
+     */
+    public void abort(int xid)
+            throws RemoteException,
+            InvalidTransactionException;
+
     /**
      * Add seats to a flight.  In general this will be used to create
      * a new flight, but it should be possible to add seats to an
      * existing flight.  Adding to an existing flight should overwrite
      * the current price of the available seats.
      *
-     * @param xid id of transaction.
+     * @param xid       id of transaction.
      * @param flightNum flight number, cannot be null.
-     * @param numSeats number of seats to be added to the flight.(>=0)
-     * @param price price of each seat. If price < 0, don't overwrite the current price; leave price at 0 if price<0 for very first add for this flight.
+     * @param numSeats  number of seats to be added to the flight.(>=0)
+     * @param price     price of each seat. If price < 0, don't overwrite the current price; leave price at 0 if price<0 for very first add for this flight.
      * @return true on success, false on failure. (flightNum==null; numSeats<0...)
-     *
-     * @throws RemoteException on communications failure.
+     * @throws RemoteException             on communications failure.
      * @throws TransactionAbortedException if transaction was aborted.
      * @throws InvalidTransactionException if transaction id is invalid.
      */
     public boolean addFlight(int xid, String flightNum, int numSeats, int price)
-	throws RemoteException,
-	       TransactionAbortedException,
-	       InvalidTransactionException;
+            throws RemoteException,
+            TransactionAbortedException,
+            InvalidTransactionException;
+
     /**
      * Delete an entire flight.
      * Should fail if a customer has a reservation on this flight.
      *
-     * @param xid id of transaction.
+     * @param xid       id of transaction.
      * @param flightNum flight number, cannot be null.
      * @return true on success, false on failure. (flight doesn't exist;has reservations...)
-     *
-     * @throws RemoteException on communications failure.
+     * @throws RemoteException             on communications failure.
      * @throws TransactionAbortedException if transaction was aborted.
      * @throws InvalidTransactionException if transaction id is invalid.
      */
     public boolean deleteFlight(int xid, String flightNum)
-	throws RemoteException,
-	       TransactionAbortedException,
-	       InvalidTransactionException;
+            throws RemoteException,
+            TransactionAbortedException,
+            InvalidTransactionException;
 
     /**
      * Add rooms to a location.
@@ -114,195 +119,203 @@ public interface WorkflowController extends Remote {
      * instead of a flight number.
      *
      * @return true on success, false on failure. (location==null; numRooms<0...)
-     *
-     * @throws RemoteException on communications failure.
+     * @throws RemoteException             on communications failure.
      * @throws TransactionAbortedException if transaction was aborted.
      * @throws InvalidTransactionException if transaction id is invalid.
-     *
      * @see #addFlight
      */
     public boolean addRooms(int xid, String location, int numRooms, int price)
-	throws RemoteException,
-	       TransactionAbortedException,
-	       InvalidTransactionException;
+            throws RemoteException,
+            TransactionAbortedException,
+            InvalidTransactionException;
+
     /**
      * Delete rooms from a location.
-     * This subtracts from both the toal and the available room count
+     * This subtracts from both the total and the available room count
      * (rooms not allocated to a customer).  It should fail if it
      * would make the count of available rooms negative.
      *
      * @return true on success, false on failure. (location doesn't exist; numRooms<0; not enough available rooms...)
-     *
-     * @throws RemoteException on communications failure.
+     * @throws RemoteException             on communications failure.
      * @throws TransactionAbortedException if transaction was aborted.
      * @throws InvalidTransactionException if transaction id is invalid.
-     *
      * @see #deleteFlight
      */
     public boolean deleteRooms(int xid, String location, int numRooms)
-	throws RemoteException,
-	       TransactionAbortedException,
-	       InvalidTransactionException;
+            throws RemoteException,
+            TransactionAbortedException,
+            InvalidTransactionException;
 
     /**
      * Add cars to a location.
      * Cars have the same semantics as hotels (see addRooms).
      *
      * @return true on success, false on failure.
-     *
-     * @throws RemoteException on communications failure.
+     * @throws RemoteException             on communications failure.
      * @throws TransactionAbortedException if transaction was aborted.
      * @throws InvalidTransactionException if transaction id is invalid.
-     *
      * @see #addRooms
      * @see #addFlight
      */
     public boolean addCars(int xid, String location, int numCars, int price)
-	throws RemoteException,
-	       TransactionAbortedException,
-	       InvalidTransactionException;
+            throws RemoteException,
+            TransactionAbortedException,
+            InvalidTransactionException;
+
     /**
      * Delete cars from a location.
      * Cars have the same semantics as hotels.
      *
      * @return true on success, false on failure.
-     *
-     * @throws RemoteException on communications failure.
+     * @throws RemoteException             on communications failure.
      * @throws TransactionAbortedException if transaction was aborted.
      * @throws InvalidTransactionException if transaction id is invalid.
-     *
      * @see #deleteRooms
      * @see #deleteFlight
      */
     public boolean deleteCars(int xid, String location, int numCars)
-	throws RemoteException,
-	       TransactionAbortedException,
-	       InvalidTransactionException; 
+            throws RemoteException,
+            TransactionAbortedException,
+            InvalidTransactionException;
 
     /**
      * Add a new customer to database.  Should return success if
      * customer already exists.
      *
-     * @param xid id of transaction.
+     * @param xid      id of transaction.
      * @param custName name of customer.
      * @return true on success, false on failure.
-     *
-     * @throws RemoteException on communications failure.
+     * @throws RemoteException             on communications failure.
      * @throws TransactionAbortedException if transaction was aborted.
      * @throws InvalidTransactionException if transaction id is invalid.
      */
     public boolean newCustomer(int xid, String custName)
-	throws RemoteException,
-	       TransactionAbortedException,
-	       InvalidTransactionException;
-    /**
-     * Delete this customer and un-reserve associated reservations.
-     *
-     * @param xid id of transaction.
-     * @param custName name of customer.
-     * @return true on success, false on failure. (custName==null or doesn't exist...)
-     *
-     * @throws RemoteException on communications failure.
-     * @throws TransactionAbortedException if transaction was aborted.
-     * @throws InvalidTransactionException if transaction id is invalid.
-     */
-    public boolean deleteCustomer(int xid, String custName)
-	throws RemoteException,
-	       TransactionAbortedException,
-	       InvalidTransactionException;
+            throws RemoteException,
+            TransactionAbortedException,
+            InvalidTransactionException;
 
 
     //////////
     // QUERY INTERFACE
     //////////
+
+    /**
+     * Delete this customer and un-reserve associated reservations.
+     *
+     * @param xid      id of transaction.
+     * @param custName name of customer.
+     * @return true on success, false on failure. (custName==null or doesn't exist...)
+     * @throws RemoteException             on communications failure.
+     * @throws TransactionAbortedException if transaction was aborted.
+     * @throws InvalidTransactionException if transaction id is invalid.
+     */
+    public boolean deleteCustomer(int xid, String custName)
+            throws RemoteException,
+            TransactionAbortedException,
+            InvalidTransactionException;
+
     /**
      * Return the number of empty seats on a flight.
      *
-     * @param xid id of transaction.
+     * @param xid       id of transaction.
      * @param flightNum flight number.
      * @return # empty seats on the flight. (-1 if flightNum==null or doesn't exist)
-     *
-     * @throws RemoteException on communications failure.
+     * @throws RemoteException             on communications failure.
      * @throws TransactionAbortedException if transaction was aborted.
      * @throws InvalidTransactionException if transaction id is invalid.
      */
     public int queryFlight(int xid, String flightNum)
-	throws RemoteException,
-	       TransactionAbortedException,
-	       InvalidTransactionException;
+            throws RemoteException,
+            TransactionAbortedException,
+            InvalidTransactionException;
 
-    /** Return the price of a seat on this flight. Return -1 if flightNum==null or doesn't exist.*/
+    /**
+     * Return the price of a seat on this flight. Return -1 if flightNum==null or doesn't exist.
+     */
     public int queryFlightPrice(int xid, String flightNum)
-	throws RemoteException,
-	       TransactionAbortedException,
-	       InvalidTransactionException;
+            throws RemoteException,
+            TransactionAbortedException,
+            InvalidTransactionException;
 
-    /** Return the number of rooms available at a location. */
+    /**
+     * Return the number of rooms available at a location.
+     */
     public int queryRooms(int xid, String location)
-	throws RemoteException,
-	       TransactionAbortedException,
-	       InvalidTransactionException;
+            throws RemoteException,
+            TransactionAbortedException,
+            InvalidTransactionException;
 
-    /** Return the price of rooms at this location. */
+    /**
+     * Return the price of rooms at this location.
+     */
     public int queryRoomsPrice(int xid, String location)
-	throws RemoteException,
-	       TransactionAbortedException,
-	       InvalidTransactionException;
+            throws RemoteException,
+            TransactionAbortedException,
+            InvalidTransactionException;
 
-    /** Return the number of cars available at a location. */
+    /**
+     * Return the number of cars available at a location.
+     */
     public int queryCars(int xid, String location)
-	throws RemoteException,
-	       TransactionAbortedException,
-	       InvalidTransactionException;
+            throws RemoteException,
+            TransactionAbortedException,
+            InvalidTransactionException;
 
-    /** Return the price of rental cars at this location. */
+    /**
+     * Return the price of rental cars at this location.
+     */
     public int queryCarsPrice(int xid, String location)
-	throws RemoteException,
-	       TransactionAbortedException,
-	       InvalidTransactionException;
-
-    /* Return the total price of all reservations held for a customer. Return -1 if custName==null or doesn't exist.*/
-    public int queryCustomerBill(int xid, String custName)
-	    throws RemoteException,
-		   TransactionAbortedException,
-		   InvalidTransactionException;
+            throws RemoteException,
+            TransactionAbortedException,
+            InvalidTransactionException;
 
 
     //////////
     // RESERVATION INTERFACE
     //////////
+
+    /* Return the total price of all reservations held for a customer. Return -1 if custName==null or doesn't exist.*/
+    public int queryCustomerBill(int xid, String custName)
+            throws RemoteException,
+            TransactionAbortedException,
+            InvalidTransactionException;
+
     /**
      * Reserve a flight on behalf of this customer.
      *
-     * @param xid id of transaction.
-     * @param custName name of customer.
+     * @param xid       id of transaction.
+     * @param custName  name of customer.
      * @param flightNum flight number.
      * @return true on success, false on failure. (cust or flight doesn't exist; no seats left...)
-     *
-     * @throws RemoteException on communications failure.
+     * @throws RemoteException             on communications failure.
      * @throws TransactionAbortedException if transaction was aborted.
      * @throws InvalidTransactionException if transaction id is invalid.
      */
     public boolean reserveFlight(int xid, String custName, String flightNum)
-	throws RemoteException,
-	       TransactionAbortedException,
-	       InvalidTransactionException;
+            throws RemoteException,
+            TransactionAbortedException,
+            InvalidTransactionException;
 
-    /** Reserve a car for this customer at the specified location. */
+    /**
+     * Reserve a car for this customer at the specified location.
+     */
     public boolean reserveCar(int xid, String custName, String location)
-	throws RemoteException,
-	       TransactionAbortedException,
-	       InvalidTransactionException;
-
-    /** Reserve a room for this customer at the specified location. */
-    public boolean reserveRoom(int xid, String custName, String location)
-	throws RemoteException,
-	       TransactionAbortedException,
-	       InvalidTransactionException;
+            throws RemoteException,
+            TransactionAbortedException,
+            InvalidTransactionException;
 
     //////////
     // TECHNICAL/TESTING INTERFACE
     //////////
+
+    /**
+     * Reserve a room for this customer at the specified location.
+     */
+    public boolean reserveRoom(int xid, String custName, String location)
+            throws RemoteException,
+            TransactionAbortedException,
+            InvalidTransactionException;
+
     /**
      * If some component has died and was restarted, this function is
      * called to refresh the RMI references so that everybody can talk
@@ -314,8 +327,9 @@ public interface WorkflowController extends Remote {
      *
      * @return true on success, false on failure. (some component not up yet...)
      */
-    public boolean reconnect() 
-	throws RemoteException;
+    public boolean reconnect()
+            throws RemoteException;
+
     /**
      * Kill the component immediately.  Used to simulate a system
      * failure such as a power outage.
@@ -326,7 +340,8 @@ public interface WorkflowController extends Remote {
      * @return true on success, false on failure.
      */
     public boolean dieNow(String who)
-	throws RemoteException;
+            throws RemoteException;
+
     /**
      * Sets a flag so that the RM fails after the next enlist()
      * operation.  That is, the RM immediately dies on return of the
@@ -339,7 +354,8 @@ public interface WorkflowController extends Remote {
      * @return true on success, false on failure.
      */
     public boolean dieRMAfterEnlist(String who)
-	throws RemoteException;
+            throws RemoteException;
+
     /**
      * Sets a flag so that the RM fails when it next tries to prepare,
      * but before it gets a chance to save the update list to disk.
@@ -350,7 +366,8 @@ public interface WorkflowController extends Remote {
      * @return true on success, false on failure.
      */
     public boolean dieRMBeforePrepare(String who)
-	throws RemoteException;
+            throws RemoteException;
+
     /**
      * Sets a flag so that the RM fails when it next tries to prepare:
      * after it has entered the prepared state, but just before it
@@ -362,7 +379,8 @@ public interface WorkflowController extends Remote {
      * @return true on success, false on failure.
      */
     public boolean dieRMAfterPrepare(String who)
-	throws RemoteException;
+            throws RemoteException;
+
     /**
      * Sets a flag so that the TM fails after it has received
      * "prepared" messages from all RMs, but before it can log
@@ -373,7 +391,8 @@ public interface WorkflowController extends Remote {
      * @return true on success, false on failure.
      */
     public boolean dieTMBeforeCommit()
-	throws RemoteException;
+            throws RemoteException;
+
     /**
      * Sets a flag so that the TM fails right after it logs
      * "committed".
@@ -383,7 +402,8 @@ public interface WorkflowController extends Remote {
      * @return true on success, false on failure.
      */
     public boolean dieTMAfterCommit()
-	throws RemoteException;
+            throws RemoteException;
+
     /**
      * Sets a flag so that the RM fails when it is told by the TM to
      * commit, by before it could actually change the database content
@@ -395,7 +415,8 @@ public interface WorkflowController extends Remote {
      * @return true on success, false on failure.
      */
     public boolean dieRMBeforeCommit(String who)
-	throws RemoteException;
+            throws RemoteException;
+
     /**
      * Sets a flag so that the RM fails when it is told by the TM to
      * abort, by before it could actually do anything.  (i.e., die at
@@ -407,9 +428,5 @@ public interface WorkflowController extends Remote {
      * @return true on success, false on failure.
      */
     public boolean dieRMBeforeAbort(String who)
-	throws RemoteException;
-
-
-    /** The RMI name a WorkflowController binds to. */
-    public static final String RMIName = "WC";
+            throws RemoteException;
 }

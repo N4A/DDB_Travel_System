@@ -32,6 +32,23 @@ public class Hotel extends ResourceItem {
         throw new InvalidIndexException(indexName);
     }
 
+    public void addRooms(int num) {
+        this.numRooms += num;
+        this.numAvail += num;
+    }
+
+    public void bookRooms(int num) {
+        this.numAvail -= num;
+    }
+
+    public int getPrice() {
+        return price;
+    }
+
+    public void setPrice(int price) {
+        this.price = price;
+    }
+
     @Override
     public Object getKey() {
         return location;

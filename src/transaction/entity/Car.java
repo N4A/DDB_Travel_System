@@ -31,6 +31,10 @@ public class Car extends ResourceItem {
         return price;
     }
 
+    public void setPrice(int price) {
+        this.price = price;
+    }
+
     public int getNumCars() {
         return numCars;
     }
@@ -41,6 +45,11 @@ public class Car extends ResourceItem {
 
     public void bookCars(int num) {
         this.numAvail -= num;
+    }
+
+    public void addCars(int num) {
+        this.numCars += num;
+        this.numAvail += num;
     }
 
     @Override

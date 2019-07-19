@@ -31,6 +31,10 @@ public class Flight extends ResourceItem {
         return price;
     }
 
+    public void setPrice(int price) {
+        this.price = price;
+    }
+
     public int getNumSeats() {
         return numSeats;
     }
@@ -41,6 +45,11 @@ public class Flight extends ResourceItem {
 
     public void bookSeats(int num) {
         this.numAvail -= num;
+    }
+
+    public void addSeats(int numSeats) {
+        this.numSeats += numSeats;
+        this.numAvail += numSeats;
     }
 
     @Override

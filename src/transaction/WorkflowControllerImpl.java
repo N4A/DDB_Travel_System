@@ -1,8 +1,15 @@
 package transaction;
 
+import lockmgr.DeadlockException;
+import transaction.entity.Car;
+import transaction.entity.Flight;
+import transaction.entity.Hotel;
+import transaction.entity.ResourceItem;
+
 import java.rmi.Naming;
 import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
+import java.util.HashSet;
 
 /**
  * Workflow Controller for the Distributed Travel Reservation System.
@@ -16,22 +23,14 @@ public class WorkflowControllerImpl
         extends java.rmi.server.UnicastRemoteObject
         implements WorkflowController {
 
-    protected int flightcounter, flightprice, carscounter, carsprice, roomscounter, roomsprice;
-
-    protected ResourceManager rmFlights = null;
-    protected ResourceManager rmRooms = null;
-    protected ResourceManager rmCars = null;
-    protected ResourceManager rmCustomers = null;
     protected TransactionManager tm = null;
+    private HashSet<Integer> xids = new HashSet<>();
+    private ResourceManager rmFlights = null;
+    private ResourceManager rmRooms = null;
+    private ResourceManager rmCars = null;
+    private ResourceManager rmCustomers = null;
 
     public WorkflowControllerImpl() throws RemoteException {
-        flightcounter = 0;
-        flightprice = 0;
-        carscounter = 0;
-        carsprice = 0;
-        roomscounter = 0;
-        roomsprice = 0;
-        flightprice = 0;
 
         while (!reconnect()) {
             // would be better to sleep a while
@@ -65,19 +64,25 @@ public class WorkflowControllerImpl
     // TRANSACTION INTERFACE
     public int start()
             throws RemoteException {
-        return tm.start();
+        int xid = tm.start();
+        xids.add(xid);
+        return xid;
     }
 
     public boolean commit(int xid)
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
+        if (!xids.contains(xid))
+            throw new InvalidTransactionException(xid, "");
         return tm.commit(xid);
     }
 
     public void abort(int xid)
             throws RemoteException,
             InvalidTransactionException {
+        if (!xids.contains(xid))
+            throw new InvalidTransactionException(xid, "");
         tm.abort(xid);
     }
 
@@ -87,55 +92,140 @@ public class WorkflowControllerImpl
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
-//        rmFlights.insert(xid, )
-//        rmFlights.
-        flightcounter += numSeats;
-        flightprice = price;
-        return true;
+        ResourceItem item = queryItem(rmFlights, xid, flightNum, numSeats);
+
+        if (item != null) {
+            Flight f = (Flight) item;
+            f.addSeats(numSeats);
+            if (price >= 0)
+                f.setPrice(price);
+            try {
+                return rmFlights.update(xid, rmFlights.getID(), flightNum, f);
+            } catch (DeadlockException e) {
+                e.printStackTrace();
+            }
+        } else {
+            if (price < 0)
+                price = 0;
+            Flight f = new Flight(flightNum, price, numSeats);
+            try {
+                return rmFlights.insert(xid, rmFlights.getID(), f);
+            } catch (DeadlockException e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
     }
 
     public boolean deleteFlight(int xid, String flightNum)
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
-        flightcounter = 0;
-        flightprice = 0;
-        return true;
+        return deleteItem(rmFlights, xid, flightNum);
+    }
+
+    private boolean deleteItem(ResourceManager rm, int xid, String key)
+            throws RemoteException,
+            TransactionAbortedException,
+            InvalidTransactionException {
+        if (!xids.contains(xid))
+            throw new InvalidTransactionException(xid, "");
+        try {
+            return rm.delete(xid, rm.getID(), key);
+        } catch (DeadlockException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    private ResourceItem queryItem(ResourceManager rm, int xid, String key, int num)
+            throws RemoteException,
+            TransactionAbortedException,
+            InvalidTransactionException {
+        if (!xids.contains(xid))
+            throw new InvalidTransactionException(xid, "");
+        if (key == null || num < 0)
+            return null;
+
+        ResourceItem item = null;
+        try {
+            item = rm.query(xid, rm.getID(), key);
+        } catch (DeadlockException e) {
+            e.printStackTrace();
+        }
+
+        return item;
     }
 
     public boolean addRooms(int xid, String location, int numRooms, int price)
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
-        roomscounter += numRooms;
-        roomsprice = price;
-        return true;
+        ResourceItem item = queryItem(rmRooms, xid, location, numRooms);
+
+        if (item != null) {
+            Hotel h = (Hotel) item;
+            h.addRooms(numRooms);
+            if (price >= 0)
+                h.setPrice(price);
+            try {
+                return rmFlights.update(xid, rmFlights.getID(), numRooms, h);
+            } catch (DeadlockException e) {
+                e.printStackTrace();
+            }
+        } else {
+            if (price < 0)
+                price = 0;
+            Hotel h = new Hotel(location, price, numRooms);
+            try {
+                return rmFlights.insert(xid, rmFlights.getID(), h);
+            } catch (DeadlockException e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
     }
 
     public boolean deleteRooms(int xid, String location, int numRooms)
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
-        roomscounter = 0;
-        roomsprice = 0;
-        return true;
+        return deleteItem(rmRooms, xid, location);
     }
 
     public boolean addCars(int xid, String location, int numCars, int price)
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
-        carscounter += numCars;
-        carsprice = price;
-        return true;
+        ResourceItem item = queryItem(rmCars, xid, location, numCars);
+
+        if (item != null) {
+            Car c = (Car) item;
+            c.addCars(numCars);
+            if (price >= 0)
+                c.setPrice(price);
+            try {
+                return rmCars.update(xid, rmCars.getID(), numCars, c);
+            } catch (DeadlockException e) {
+                e.printStackTrace();
+            }
+        } else {
+            if (price < 0)
+                price = 0;
+            Car car = new Car(location, price, numCars);
+            try {
+                return rmCars.insert(xid, rmCars.getID(), car);
+            } catch (DeadlockException e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
     }
 
     public boolean deleteCars(int xid, String location, int numCars)
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
-        carscounter = 0;
-        carsprice = 0;
         return true;
     }
 
@@ -159,42 +249,42 @@ public class WorkflowControllerImpl
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
-        return flightcounter;
+        return 0;
     }
 
     public int queryFlightPrice(int xid, String flightNum)
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
-        return flightprice;
+        return 0;
     }
 
     public int queryRooms(int xid, String location)
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
-        return roomscounter;
+        return 0;
     }
 
     public int queryRoomsPrice(int xid, String location)
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
-        return roomsprice;
+        return 0;
     }
 
     public int queryCars(int xid, String location)
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
-        return carscounter;
+        return 0;
     }
 
     public int queryCarsPrice(int xid, String location)
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
-        return carsprice;
+        return 0;
     }
 
     public int queryCustomerBill(int xid, String custName)
@@ -210,7 +300,6 @@ public class WorkflowControllerImpl
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
-        flightcounter--;
         return true;
     }
 
@@ -218,7 +307,6 @@ public class WorkflowControllerImpl
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
-        carscounter--;
         return true;
     }
 
@@ -226,7 +314,6 @@ public class WorkflowControllerImpl
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
-        roomscounter--;
         return true;
     }
 
