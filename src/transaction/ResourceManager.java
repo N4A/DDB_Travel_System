@@ -1,12 +1,11 @@
 package transaction;
 
 import lockmgr.DeadlockException;
+import transaction.entity.ResourceItem;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
-import java.rmi.server.RMIClassLoader;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
 
 /**

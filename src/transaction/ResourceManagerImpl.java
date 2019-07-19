@@ -2,6 +2,7 @@ package transaction;
 
 import lockmgr.DeadlockException;
 import lockmgr.LockManager;
+import transaction.entity.ResourceItem;
 
 import java.io.*;
 import java.rmi.Naming;
@@ -17,7 +18,7 @@ import java.util.*;
 
 public class ResourceManagerImpl extends java.rmi.server.UnicastRemoteObject implements ResourceManager {
     protected final static String TRANSACTION_LOG_FILENAME = "transactions.log";
-    protected String myRMIName = null; // Used to distinguish this RM from other
+    protected String myRMIName = null; // Used to distinguish this RM from others
     protected String dieTime;
     // RMs
     protected HashSet xids = new HashSet();
@@ -26,6 +27,7 @@ public class ResourceManagerImpl extends java.rmi.server.UnicastRemoteObject imp
     protected Hashtable tables = new Hashtable();
 
     public ResourceManagerImpl(String rmiName) throws RemoteException {
+        // check whether the resource is valid
         if (!(rmiName.equals(RMINameCars) || rmiName.equals(RMINameCustomers) ||
                 rmiName.equals(RMINameFlights) || rmiName.equals(RMINameRooms)))
             throw new RemoteException("None valid Resource Name : " + rmiName);

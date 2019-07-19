@@ -14,6 +14,7 @@ import java.util.Set;
 
 import lockmgr.DeadlockException;
 import lockmgr.LockManager;
+import transaction.entity.ResourceItem;
 
 /**
  * @author RAdmin

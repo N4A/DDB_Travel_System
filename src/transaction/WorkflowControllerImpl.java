@@ -17,7 +17,6 @@ public class WorkflowControllerImpl
         implements WorkflowController {
 
     protected int flightcounter, flightprice, carscounter, carsprice, roomscounter, roomsprice;
-    protected int xidCounter;
 
     protected ResourceManager rmFlights = null;
     protected ResourceManager rmRooms = null;
@@ -34,10 +33,12 @@ public class WorkflowControllerImpl
         roomsprice = 0;
         flightprice = 0;
 
-        xidCounter = 1;
-
         while (!reconnect()) {
             // would be better to sleep a while
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ignored) {
+            }
         }
     }
 
@@ -64,21 +65,20 @@ public class WorkflowControllerImpl
     // TRANSACTION INTERFACE
     public int start()
             throws RemoteException {
-        return (xidCounter++);
+        return tm.start();
     }
 
     public boolean commit(int xid)
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
-        System.out.println("Committing");
-        return true;
+        return tm.commit(xid);
     }
 
     public void abort(int xid)
             throws RemoteException,
             InvalidTransactionException {
-        return;
+        tm.abort(xid);
     }
 
 
@@ -87,6 +87,8 @@ public class WorkflowControllerImpl
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
+//        rmFlights.insert(xid, )
+//        rmFlights.
         flightcounter += numSeats;
         flightprice = price;
         return true;

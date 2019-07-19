@@ -1,6 +1,8 @@
 package transaction;
 
-import java.rmi.*;
+import java.rmi.Naming;
+import java.rmi.RMISecurityManager;
+import java.rmi.RemoteException;
 
 /**
  * Transaction Manager for the Distributed Travel Reservation System.
@@ -11,6 +13,12 @@ import java.rmi.*;
 public class TransactionManagerImpl
         extends java.rmi.server.UnicastRemoteObject
         implements TransactionManager {
+
+    protected int xidCounter;
+
+    public TransactionManagerImpl() throws RemoteException {
+        xidCounter = 1;
+    }
 
     public static void main(String[] args) {
         System.setSecurityManager(new RMISecurityManager());
@@ -38,7 +46,19 @@ public class TransactionManagerImpl
     public void enlist(int xid, ResourceManager rm) throws RemoteException {
     }
 
-    public TransactionManagerImpl() throws RemoteException {
+    @Override
+    public int start() throws RemoteException {
+        return 0;
+    }
+
+    @Override
+    public boolean commit(int xid) throws RemoteException, TransactionAbortedException, InvalidTransactionException {
+        return false;
+    }
+
+    @Override
+    public void abort(int xid) throws RemoteException, InvalidTransactionException {
+
     }
 
     public boolean dieNow()
