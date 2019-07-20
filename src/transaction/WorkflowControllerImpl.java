@@ -75,7 +75,9 @@ public class WorkflowControllerImpl
             InvalidTransactionException {
         if (!xids.contains(xid))
             throw new InvalidTransactionException(xid, "");
-        return tm.commit(xid);
+        boolean tmResult = tm.commit(xid);
+        xids.remove(xid);
+        return tmResult;
     }
 
     public void abort(int xid)
@@ -92,9 +94,12 @@ public class WorkflowControllerImpl
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
-        ResourceItem item = queryItem(rmFlights, xid, flightNum, numSeats);
+        if (flightNum == null || numSeats < 0)
+            return false;
+        // check whether is flight exists or not
+        ResourceItem item = queryItem(rmFlights, xid, flightNum);
 
-        if (item != null) {
+        if (item != null) { // exist, then update
             Flight f = (Flight) item;
             f.addSeats(numSeats);
             if (price >= 0)
@@ -104,7 +109,7 @@ public class WorkflowControllerImpl
             } catch (DeadlockException e) {
                 e.printStackTrace();
             }
-        } else {
+        } else { // not exist, then insert new one
             if (price < 0)
                 price = 0;
             Flight f = new Flight(flightNum, price, numSeats);
@@ -138,14 +143,12 @@ public class WorkflowControllerImpl
         return false;
     }
 
-    private ResourceItem queryItem(ResourceManager rm, int xid, String key, int num)
+    private ResourceItem queryItem(ResourceManager rm, int xid, String key)
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
         if (!xids.contains(xid))
             throw new InvalidTransactionException(xid, "");
-        if (key == null || num < 0)
-            return null;
 
         ResourceItem item = null;
         try {
@@ -161,7 +164,9 @@ public class WorkflowControllerImpl
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
-        ResourceItem item = queryItem(rmRooms, xid, location, numRooms);
+        if (location == null || numRooms < 0) // see interface doc for requirement
+            return false;
+        ResourceItem item = queryItem(rmRooms, xid, location);
 
         if (item != null) {
             Hotel h = (Hotel) item;
@@ -169,7 +174,7 @@ public class WorkflowControllerImpl
             if (price >= 0)
                 h.setPrice(price);
             try {
-                return rmFlights.update(xid, rmFlights.getID(), numRooms, h);
+                return rmRooms.update(xid, rmRooms.getID(), numRooms, h);
             } catch (DeadlockException e) {
                 e.printStackTrace();
             }
@@ -178,7 +183,7 @@ public class WorkflowControllerImpl
                 price = 0;
             Hotel h = new Hotel(location, price, numRooms);
             try {
-                return rmFlights.insert(xid, rmFlights.getID(), h);
+                return rmRooms.insert(xid, rmRooms.getID(), h);
             } catch (DeadlockException e) {
                 e.printStackTrace();
             }
@@ -197,7 +202,10 @@ public class WorkflowControllerImpl
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
-        ResourceItem item = queryItem(rmCars, xid, location, numCars);
+        if (location == null || numCars < 0)
+            return false;
+
+        ResourceItem item = queryItem(rmCars, xid, location);
 
         if (item != null) {
             Car c = (Car) item;
@@ -249,42 +257,72 @@ public class WorkflowControllerImpl
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
-        return 0;
+        if (flightNum == null)
+            return -1;
+        ResourceItem item = queryItem(rmFlights, xid, flightNum);
+        if (item == null)
+            return -1;
+        return ((Flight) item).getNumAvail();
     }
 
     public int queryFlightPrice(int xid, String flightNum)
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
-        return 0;
+        if (flightNum == null)
+            return -1;
+        ResourceItem item = queryItem(rmFlights, xid, flightNum);
+        if (item == null)
+            return -1;
+        return ((Flight) item).getPrice();
     }
 
     public int queryRooms(int xid, String location)
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
-        return 0;
+        if (location == null)
+            return -1;
+        ResourceItem item = queryItem(rmRooms, xid, location);
+        if (item == null)
+            return -1;
+        return ((Hotel) item).getNumAvail();
     }
 
     public int queryRoomsPrice(int xid, String location)
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
-        return 0;
+        if (location == null)
+            return -1;
+        ResourceItem item = queryItem(rmRooms, xid, location);
+        if (item == null)
+            return -1;
+        return ((Hotel) item).getPrice();
     }
 
     public int queryCars(int xid, String location)
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
-        return 0;
+        if (location == null)
+            return -1;
+        ResourceItem item = queryItem(rmCars, xid, location);
+        if (item == null)
+            return -1;
+        return ((Car) item).getNumAvail();
     }
 
     public int queryCarsPrice(int xid, String location)
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
-        return 0;
+        if (location == null)
+            return -1;
+        ResourceItem item = queryItem(rmCars, xid, location);
+        if (item == null)
+            return -1;
+        return ((Car) item).getPrice();
     }
 
     public int queryCustomerBill(int xid, String custName)

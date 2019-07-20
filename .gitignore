@@ -6,6 +6,7 @@ build/
 
 # test file
 # runrmi.sh
+#src/test.part2
 
 # temp ppt
 doc/~$*.ppt
