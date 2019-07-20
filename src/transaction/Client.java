@@ -246,9 +246,11 @@ public class Client {
                         System.exit(1);
                     } catch (IllegalArgumentException e) {
                         System.err.println("[" + id + "] " + methodName + " got IllegalArgumentException: " + e);
+//                        System.err.println(params.toString());
                         System.exit(1);
                     } catch (InvocationTargetException e) {
                         retExc = e.getTargetException();
+//                        System.err.println(params.toString());
                         System.out.println("[" + id + "] " + methodName + " exceptioned: " + retExc.getClass().getName());
                     }
 

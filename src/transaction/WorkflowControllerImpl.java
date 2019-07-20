@@ -174,7 +174,7 @@ public class WorkflowControllerImpl
             if (price >= 0)
                 h.setPrice(price);
             try {
-                return rmRooms.update(xid, rmRooms.getID(), numRooms, h);
+                return rmRooms.update(xid, rmRooms.getID(), location, h);
             } catch (DeadlockException e) {
                 e.printStackTrace();
             }
@@ -213,7 +213,7 @@ public class WorkflowControllerImpl
             if (price >= 0)
                 c.setPrice(price);
             try {
-                return rmCars.update(xid, rmCars.getID(), numCars, c);
+                return rmCars.update(xid, rmCars.getID(), location, c);
             } catch (DeadlockException e) {
                 e.printStackTrace();
             }
