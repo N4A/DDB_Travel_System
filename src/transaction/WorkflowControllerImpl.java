@@ -85,6 +85,7 @@ public class WorkflowControllerImpl
         if (!xids.contains(xid))
             throw new InvalidTransactionException(xid, "");
         tm.abort(xid);
+        xids.remove(xid);
     }
 
 
@@ -106,7 +107,9 @@ public class WorkflowControllerImpl
             try {
                 return rmFlights.update(xid, rmFlights.getID(), flightNum, f);
             } catch (DeadlockException e) {
-                e.printStackTrace();
+                // dead lock happened, quit this transaction
+                abort(xid);
+                throw new TransactionAbortedException(xid, "This transaction cause dead lock: " + e.getMessage());
             }
         } else { // not exist, then insert new one
             if (price < 0)
@@ -115,10 +118,11 @@ public class WorkflowControllerImpl
             try {
                 return rmFlights.insert(xid, rmFlights.getID(), f);
             } catch (DeadlockException e) {
-                e.printStackTrace();
+                // dead lock happened, quit this transaction
+                abort(xid);
+                throw new TransactionAbortedException(xid, "This transaction cause dead lock: " + e.getMessage());
             }
         }
-        return false;
     }
 
     public boolean deleteFlight(int xid, String flightNum)
@@ -136,8 +140,12 @@ public class WorkflowControllerImpl
             if (item == null)
                 return false;
             rmFlights.delete(xid, rmFlights.getID(), flightNum);
-        } catch (DeadlockException | InvalidIndexException e) {
-            e.printStackTrace();
+        } catch (DeadlockException e) {
+            // dead lock happened, quit this transaction
+            abort(xid);
+            throw new TransactionAbortedException(xid, "This transaction cause dead lock: " + e.getMessage());
+        } catch (InvalidIndexException e) {
+            System.err.println("hhh, code is wrong. InvalidIndexException: " + e.getMessage());
         }
         return true;
     }
@@ -153,7 +161,9 @@ public class WorkflowControllerImpl
         try {
             item = rm.query(xid, rm.getID(), key);
         } catch (DeadlockException e) {
-            e.printStackTrace();
+            // dead lock happened, quit this transaction
+            abort(xid);
+            throw new TransactionAbortedException(xid, "This transaction cause dead lock: " + e.getMessage());
         }
 
         return item;
@@ -175,7 +185,9 @@ public class WorkflowControllerImpl
             try {
                 return rmRooms.update(xid, rmRooms.getID(), location, h);
             } catch (DeadlockException e) {
-                e.printStackTrace();
+                // dead lock happened, quit this transaction
+                abort(xid);
+                throw new TransactionAbortedException(xid, "This transaction cause dead lock: " + e.getMessage());
             }
         } else {
             if (price < 0)
@@ -184,10 +196,11 @@ public class WorkflowControllerImpl
             try {
                 return rmRooms.insert(xid, rmRooms.getID(), h);
             } catch (DeadlockException e) {
-                e.printStackTrace();
+                // dead lock happened, quit this transaction
+                abort(xid);
+                throw new TransactionAbortedException(xid, "This transaction cause dead lock: " + e.getMessage());
             }
         }
-        return false;
     }
 
     public boolean deleteRooms(int xid, String location, int numRooms)
@@ -208,9 +221,10 @@ public class WorkflowControllerImpl
         try {
             return rmRooms.update(xid, rmRooms.getID(), location, h);
         } catch (DeadlockException e) {
-            e.printStackTrace();
+            // dead lock happened, quit this transaction
+            abort(xid);
+            throw new TransactionAbortedException(xid, "This transaction cause dead lock: " + e.getMessage());
         }
-        return false;
     }
 
     public boolean addCars(int xid, String location, int numCars, int price)
@@ -230,7 +244,9 @@ public class WorkflowControllerImpl
             try {
                 return rmCars.update(xid, rmCars.getID(), location, c);
             } catch (DeadlockException e) {
-                e.printStackTrace();
+                // dead lock happened, quit this transaction
+                abort(xid);
+                throw new TransactionAbortedException(xid, "This transaction cause dead lock: " + e.getMessage());
             }
         } else {
             if (price < 0)
@@ -239,10 +255,11 @@ public class WorkflowControllerImpl
             try {
                 return rmCars.insert(xid, rmCars.getID(), car);
             } catch (DeadlockException e) {
-                e.printStackTrace();
+                // dead lock happened, quit this transaction
+                abort(xid);
+                throw new TransactionAbortedException(xid, "This transaction cause dead lock: " + e.getMessage());
             }
         }
-        return false;
     }
 
     public boolean deleteCars(int xid, String location, int numCars)
@@ -263,9 +280,10 @@ public class WorkflowControllerImpl
         try {
             return rmCars.update(xid, rmCars.getID(), location, c);
         } catch (DeadlockException e) {
-            e.printStackTrace();
+            // dead lock happened, quit this transaction
+            abort(xid);
+            throw new TransactionAbortedException(xid, "This transaction cause dead lock: " + e.getMessage());
         }
-        return false;
     }
 
     public boolean newCustomer(int xid, String custName)
@@ -279,9 +297,10 @@ public class WorkflowControllerImpl
         try {
             return rmCustomers.insert(xid, rmCustomers.getID(), customer);
         } catch (DeadlockException e) {
-            e.printStackTrace();
+            // dead lock happened, quit this transaction
+            abort(xid);
+            throw new TransactionAbortedException(xid, "This transaction cause dead lock: " + e.getMessage());
         }
-        return false;
     }
 
     // un reserve all reservations for the custName
@@ -326,15 +345,21 @@ public class WorkflowControllerImpl
         try {
             rmCustomers.delete(xid, rmCustomers.getID(), custName);
         } catch (DeadlockException e) {
-            e.printStackTrace();
+            // dead lock happened, quit this transaction
+            abort(xid);
+            throw new TransactionAbortedException(xid, "This transaction cause dead lock: " + e.getMessage());
         }
         try {
             // un reserve all reservations
             unReserveAll(xid, custName);
             // delete reservations
             rmCustomers.delete(xid, ResourceManager.TableNameReservations, Reservation.INDEX_CUSTNAME, custName);
-        } catch (DeadlockException | InvalidIndexException e) {
-            e.printStackTrace();
+        } catch (DeadlockException e) {
+            // dead lock happened, quit this transaction
+            abort(xid);
+            throw new TransactionAbortedException(xid, "This transaction cause dead lock: " + e.getMessage());
+        } catch (InvalidIndexException e) {
+            System.err.println(e.getMessage());
         }
         return true;
     }
@@ -426,8 +451,12 @@ public class WorkflowControllerImpl
         try {
             results = rmCustomers.query(xid, ResourceManager.TableNameReservations,
                     Reservation.INDEX_CUSTNAME, custName);
-        } catch (DeadlockException | InvalidIndexException e) {
-            e.printStackTrace();
+        } catch (DeadlockException e) {
+            // dead lock happened, quit this transaction
+            abort(xid);
+            throw new TransactionAbortedException(xid, "This transaction cause dead lock: " + e.getMessage());
+        } catch (InvalidIndexException e) {
+            System.err.println(e.getMessage());
         }
         if (results == null)
             return 0;
@@ -479,7 +508,9 @@ public class WorkflowControllerImpl
             f.bookSeats(1);
             rmFlights.update(xid, rmFlights.getID(), flightNum, f);
         } catch (DeadlockException e) {
-            e.printStackTrace();
+            // dead lock happened, quit this transaction
+            abort(xid);
+            throw new TransactionAbortedException(xid, "This transaction cause dead lock: " + e.getMessage());
         }
         return true;
     }
@@ -505,7 +536,9 @@ public class WorkflowControllerImpl
             c.bookCars(1);
             rmCars.update(xid, rmCars.getID(), location, c);
         } catch (DeadlockException e) {
-            e.printStackTrace();
+            // dead lock happened, quit this transaction
+            abort(xid);
+            throw new TransactionAbortedException(xid, "This transaction cause dead lock: " + e.getMessage());
         }
         return true;
     }
@@ -534,7 +567,9 @@ public class WorkflowControllerImpl
             h.bookRooms(1);
             rmRooms.update(xid, rmRooms.getID(), location, h);
         } catch (DeadlockException e) {
-            e.printStackTrace();
+            // dead lock happened, quit this transaction
+            abort(xid);
+            throw new TransactionAbortedException(xid, "This transaction cause dead lock: " + e.getMessage());
         }
         return true;
     }

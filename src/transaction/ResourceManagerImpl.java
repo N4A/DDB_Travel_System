@@ -18,11 +18,11 @@ import java.util.*;
 
 public class ResourceManagerImpl extends java.rmi.server.UnicastRemoteObject implements ResourceManager {
     private final static String TRANSACTION_LOG_FILENAME = "transactions.log";
+    protected TransactionManager tm = null;
     private String myRMIName = null; // Used to distinguish this RM from others
     private String dieTime;
     // RMs
     private HashSet xids = new HashSet();
-    protected TransactionManager tm = null;
     private LockManager lm = new LockManager();
     private Hashtable tables = new Hashtable();
 
