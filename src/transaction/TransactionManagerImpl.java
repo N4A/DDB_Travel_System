@@ -16,7 +16,9 @@ public class TransactionManagerImpl
         extends java.rmi.server.UnicastRemoteObject
         implements TransactionManager {
 
-    private Integer xidCounter;
+    private Integer xidCounter; // allocate unique id
+    private String dieTime; // dieTime flag
+
     // resource managers of all transactions
     private HashMap<Integer, HashSet<ResourceManager>> RMs = new HashMap<>();
 
@@ -117,4 +119,7 @@ public class TransactionManagerImpl
         // but we still need it to please the compiler.
     }
 
+    public void setDieTime(String dieTime) {
+        this.dieTime = dieTime;
+    }
 }

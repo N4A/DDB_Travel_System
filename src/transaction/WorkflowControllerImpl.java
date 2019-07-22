@@ -1,15 +1,14 @@
 package transaction;
 
 import lockmgr.DeadlockException;
-import transaction.entity.Car;
-import transaction.entity.Flight;
-import transaction.entity.Hotel;
-import transaction.entity.ResourceItem;
+import transaction.entity.*;
 
 import java.rmi.Naming;
 import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * Workflow Controller for the Distributed Travel Reservation System.
@@ -126,21 +125,21 @@ public class WorkflowControllerImpl
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
-        return deleteItem(rmFlights, xid, flightNum);
-    }
-
-    private boolean deleteItem(ResourceManager rm, int xid, String key)
-            throws RemoteException,
-            TransactionAbortedException,
-            InvalidTransactionException {
         if (!xids.contains(xid))
             throw new InvalidTransactionException(xid, "");
         try {
-            return rm.delete(xid, rm.getID(), key);
-        } catch (DeadlockException e) {
+            Collection<ResourceItem> resvs = rmCustomers.query(xid, ResourceManager.TableNameReservations,
+                    Reservation.INDEX_RESERV_KEY, flightNum);
+            if (!resvs.isEmpty())
+                return false;
+            ResourceItem item = queryItem(rmFlights, xid, flightNum);
+            if (item == null)
+                return false;
+            rmFlights.delete(xid, rmFlights.getID(), flightNum);
+        } catch (DeadlockException | InvalidIndexException e) {
             e.printStackTrace();
         }
-        return false;
+        return true;
     }
 
     private ResourceItem queryItem(ResourceManager rm, int xid, String key)
@@ -195,7 +194,23 @@ public class WorkflowControllerImpl
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
-        return deleteItem(rmRooms, xid, location);
+        if (!xids.contains(xid))
+            throw new InvalidTransactionException(xid, "");
+        if (numRooms < 0)
+            return false;
+        ResourceItem item = queryItem(rmRooms, xid, location);
+        if (item == null)
+            return false;
+        Hotel h = (Hotel) (item);
+        if (h.getNumAvail() < numRooms)
+            return false;
+        h.deleteRooms(numRooms);
+        try {
+            return rmRooms.update(xid, rmRooms.getID(), location, h);
+        } catch (DeadlockException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     public boolean addCars(int xid, String location, int numCars, int price)
@@ -234,20 +249,93 @@ public class WorkflowControllerImpl
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
-        return true;
+        if (!xids.contains(xid))
+            throw new InvalidTransactionException(xid, "");
+        if (numCars < 0)
+            return false;
+        ResourceItem item = queryItem(rmCars, xid, location);
+        if (item == null)
+            return false;
+        Car c = (Car) item;
+        if (c.getNumAvail() < numCars)
+            return false;
+        c.deleteCars(numCars);
+        try {
+            return rmCars.update(xid, rmCars.getID(), location, c);
+        } catch (DeadlockException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     public boolean newCustomer(int xid, String custName)
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
-        return true;
+        ResourceItem item = queryItem(rmCustomers, xid, custName);
+        if (item != null)
+            return true;
+        Customer customer = new Customer(custName);
+        try {
+            return rmCustomers.insert(xid, rmCustomers.getID(), customer);
+        } catch (DeadlockException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // un reserve all reservations for the custName
+    private void unReserveAll(int xid, String custName) throws InvalidTransactionException,
+            RemoteException, TransactionAbortedException, DeadlockException, InvalidIndexException {
+        Collection<ResourceItem> results = rmCustomers.query(xid, ResourceManager.TableNameReservations,
+                Reservation.INDEX_CUSTNAME, custName);
+        for (ResourceItem re : results) {
+            Reservation rvt = (Reservation) re;
+            String resvKey = rvt.getResvKey();
+            switch (rvt.getResvType()) {
+                case Reservation.RESERVATION_TYPE_FLIGHT: {
+                    Flight f = (Flight) queryItem(rmFlights, xid, resvKey);
+                    f.unbookSeats(1);
+                    rmFlights.update(xid, rmFlights.getID(), resvKey, f);
+                    break;
+                }
+                case Reservation.RESERVATION_TYPE_CAR: {
+                    Car c = (Car) queryItem(rmCars, xid, resvKey);
+                    c.unbookCars(1);
+                    rmCars.update(xid, rmCars.getID(), resvKey, c);
+                    break;
+                }
+                case Reservation.RESERVATION_TYPE_HOTEL: {
+                    Hotel h = (Hotel) queryItem(rmRooms, xid, resvKey);
+                    h.unbookRooms(1);
+                    rmRooms.update(xid, rmRooms.getID(), resvKey, h);
+                }
+            }
+        }
     }
 
     public boolean deleteCustomer(int xid, String custName)
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
+        if (custName == null)
+            return false;
+        ResourceItem item = queryItem(rmCustomers, xid, custName);
+        if (item == null)
+            return false;
+        try {
+            rmCustomers.delete(xid, rmCustomers.getID(), custName);
+        } catch (DeadlockException e) {
+            e.printStackTrace();
+        }
+        try {
+            // un reserve all reservations
+            unReserveAll(xid, custName);
+            // delete reservations
+            rmCustomers.delete(xid, ResourceManager.TableNameReservations, Reservation.INDEX_CUSTNAME, custName);
+        } catch (DeadlockException | InvalidIndexException e) {
+            e.printStackTrace();
+        }
         return true;
     }
 
@@ -329,15 +417,70 @@ public class WorkflowControllerImpl
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
-        return 0;
-    }
+        if (custName == null)
+            return -1;
+        ResourceItem item = queryItem(rmCustomers, xid, custName);
+        if (item == null)
+            return -1;
+        Collection<ResourceItem> results = null;
+        try {
+            results = rmCustomers.query(xid, ResourceManager.TableNameReservations,
+                    Reservation.INDEX_CUSTNAME, custName);
+        } catch (DeadlockException | InvalidIndexException e) {
+            e.printStackTrace();
+        }
+        if (results == null)
+            return 0;
 
+        int total_bill = 0;
+        for (ResourceItem re : results) {
+            Reservation rvt = (Reservation) re;
+            String resvKey = rvt.getResvKey();
+            switch (rvt.getResvType()) {
+                case Reservation.RESERVATION_TYPE_FLIGHT: {
+                    Flight f = (Flight) queryItem(rmFlights, xid, resvKey);
+                    total_bill += f.getPrice();
+                    break;
+                }
+                case Reservation.RESERVATION_TYPE_CAR: {
+                    Car c = (Car) queryItem(rmCars, xid, resvKey);
+                    total_bill += c.getPrice();
+                    break;
+                }
+                case Reservation.RESERVATION_TYPE_HOTEL: {
+                    Hotel h = (Hotel) queryItem(rmRooms, xid, resvKey);
+                    total_bill += h.getPrice();
+                    break;
+                }
+            }
+        }
+        return total_bill;
+    }
 
     // RESERVATION INTERFACE
     public boolean reserveFlight(int xid, String custName, String flightNum)
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
+        if (custName == null || flightNum == null)
+            return false;
+        ResourceItem cust = queryItem(rmCustomers, xid, custName);
+        if (cust == null)
+            return false;
+        ResourceItem flight = queryItem(rmFlights, xid, flightNum);
+        if (flight == null)
+            return false;
+        Flight f = (Flight) flight;
+        if (f.getNumAvail() <= 0)
+            return false;
+        Reservation reserv = new Reservation(custName, Reservation.RESERVATION_TYPE_FLIGHT, flightNum);
+        try {
+            rmCustomers.insert(xid, ResourceManager.TableNameReservations, reserv);
+            f.bookSeats(1);
+            rmFlights.update(xid, rmFlights.getID(), flightNum, f);
+        } catch (DeadlockException e) {
+            e.printStackTrace();
+        }
         return true;
     }
 
@@ -345,6 +488,25 @@ public class WorkflowControllerImpl
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
+        if (custName == null || location == null)
+            return false;
+        ResourceItem cust = queryItem(rmCustomers, xid, custName);
+        if (cust == null)
+            return false;
+        ResourceItem car = queryItem(rmCars, xid, location);
+        if (car == null)
+            return false;
+        Car c = (Car) car;
+        if (c.getNumAvail() <= 0)
+            return false;
+        Reservation reserv = new Reservation(custName, Reservation.RESERVATION_TYPE_CAR, location);
+        try {
+            rmCustomers.insert(xid, ResourceManager.TableNameReservations, reserv);
+            c.bookCars(1);
+            rmCars.update(xid, rmCars.getID(), location, c);
+        } catch (DeadlockException e) {
+            e.printStackTrace();
+        }
         return true;
     }
 
@@ -352,6 +514,87 @@ public class WorkflowControllerImpl
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException {
+        // valid check
+        if (custName == null || location == null)
+            return false;
+        ResourceItem cust = queryItem(rmCustomers, xid, custName);
+        if (cust == null)
+            return false;
+        ResourceItem hotel = queryItem(rmRooms, xid, location);
+        if (hotel == null)
+            return false;
+
+        // book room
+        Hotel h = (Hotel) hotel;
+        if (h.getNumAvail() <= 0)
+            return false;
+        Reservation reserv = new Reservation(custName, Reservation.RESERVATION_TYPE_HOTEL, location);
+        try {
+            rmCustomers.insert(xid, ResourceManager.TableNameReservations, reserv);
+            h.bookRooms(1);
+            rmRooms.update(xid, rmRooms.getID(), location, h);
+        } catch (DeadlockException e) {
+            e.printStackTrace();
+        }
+        return true;
+    }
+
+    @Override
+    public boolean reserveItinerary(int xid, String custName, List flightNumList, String location, boolean needCar, boolean needRoom) throws RemoteException, TransactionAbortedException, InvalidTransactionException {
+        // valid check
+        if (!xids.contains(xid))
+            throw new InvalidTransactionException(xid, "");
+        if (custName == null || location == null || flightNumList == null)
+            return false;
+        ResourceItem cust = queryItem(rmCustomers, xid, custName);
+        if (cust == null)
+            return false;
+
+        // check flights
+        for (Object flight : flightNumList) {
+            String flightNum = (String) flight;
+            ResourceItem item = queryItem(rmFlights, xid, flightNum);
+            if (item == null)
+                return false;
+            Flight f = (Flight) item;
+            if (f.getNumAvail() <= 0)
+                return false;
+        }
+        // check rooms
+        if (needRoom) {
+            ResourceItem item = queryItem(rmRooms, xid, location);
+            if (item == null)
+                return false;
+            Hotel h = (Hotel) item;
+            if (h.getNumAvail() <= 0)
+                return false;
+        }
+        // check cars
+        if (needCar) {
+            ResourceItem item = queryItem(rmCars, xid, location);
+            if (item == null)
+                return false;
+            Car c = (Car) item;
+            if (c.getNumAvail() <= 0)
+                return false;
+        }
+
+        // book flights
+        for (Object flight : flightNumList) {
+            String flightNum = (String) flight;
+            if (!reserveFlight(xid, custName, flightNum))
+                return false;
+        }
+        //book room
+        if (needRoom) {
+            if (!reserveRoom(xid, custName, location))
+                return false;
+        }
+        //book car
+        if (needCar) {
+            if (!reserveCar(xid, custName, location))
+                return false;
+        }
         return true;
     }
 
@@ -450,36 +693,68 @@ public class WorkflowControllerImpl
 
     public boolean dieRMAfterEnlist(String who)
             throws RemoteException {
+        // which RM to kill; must be "RMFlights", "RMRooms", "RMCars", or "RMCustomers".
+        //TODO The provided RM use direct String, use predefined
+        // dietime constant instead of String. The follows are same.
+        return dieRMByTime(who, "AfterEnlist");
+    }
+
+    private boolean dieRMByTime(String who, String time) throws RemoteException {
+        // which RM to kill; must be "RMFlights", "RMRooms", "RMCars", or "RMCustomers".
+        switch (who) {
+            case ResourceManager.RMINameFlights: {
+                rmFlights.setDieTime(time);
+                break;
+            }
+            case ResourceManager.RMINameCars: {
+                rmCars.setDieTime(time);
+                break;
+            }
+            case ResourceManager.RMINameCustomers: {
+                rmCustomers.setDieTime(time);
+                break;
+            }
+            case ResourceManager.RMINameRooms: {
+                rmRooms.setDieTime(time);
+                break;
+            }
+            default: {
+                System.err.println("Invalid RM: " + who);
+                return false;
+            }
+        }
         return true;
     }
 
     public boolean dieRMBeforePrepare(String who)
             throws RemoteException {
-        return true;
+        return dieRMByTime(who, "BeforePrepare");
     }
 
     public boolean dieRMAfterPrepare(String who)
             throws RemoteException {
-        return true;
+        return dieRMByTime(who, "AfterPrepare");
     }
 
     public boolean dieTMBeforeCommit()
             throws RemoteException {
+        tm.setDieTime("BeforeCommit");
         return true;
     }
 
     public boolean dieTMAfterCommit()
             throws RemoteException {
+        tm.setDieTime("AfterCommit");
         return true;
     }
 
     public boolean dieRMBeforeCommit(String who)
             throws RemoteException {
-        return true;
+        return dieRMByTime(who, "BeforeCommit");
     }
 
     public boolean dieRMBeforeAbort(String who)
             throws RemoteException {
-        return true;
+        return dieRMByTime(who, "BeforeAbort");
     }
 }

@@ -21,6 +21,8 @@ public interface TransactionManager extends Remote {
     public boolean dieNow()
             throws RemoteException;
 
+    public void setDieTime(String time) throws RemoteException;
+
     public void ping() throws RemoteException;
 
     //////////

@@ -37,6 +37,11 @@ public class Hotel extends ResourceItem {
         this.numAvail += num;
     }
 
+    public void deleteRooms(int num) {
+        this.numRooms -= num;
+        this.numAvail -= num;
+    }
+
     public int getNumAvail() {
         return numAvail;
     }
@@ -44,7 +49,9 @@ public class Hotel extends ResourceItem {
     public void bookRooms(int num) {
         this.numAvail -= num;
     }
-
+    public void unbookRooms(int num) {
+        this.numAvail += num;
+    }
     public int getPrice() {
         return price;
     }

@@ -47,7 +47,7 @@ public interface ResourceManager extends Remote {
 
     public String getID() throws RemoteException;
 
-    public Collection query(int xid, String tablename)
+    public Collection<ResourceItem> query(int xid, String tablename)
             throws DeadlockException, InvalidTransactionException,
             RemoteException;
 
@@ -55,7 +55,7 @@ public interface ResourceManager extends Remote {
             throws DeadlockException, InvalidTransactionException,
             RemoteException;
 
-    public Collection query(int xid, String tablename, String indexName,
+    public Collection<ResourceItem> query(int xid, String tablename, String indexName,
                             Object indexVal) throws DeadlockException,
             InvalidTransactionException, InvalidIndexException, RemoteException;
 

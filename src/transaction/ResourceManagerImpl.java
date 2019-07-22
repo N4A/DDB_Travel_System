@@ -17,14 +17,14 @@ import java.util.*;
  */
 
 public class ResourceManagerImpl extends java.rmi.server.UnicastRemoteObject implements ResourceManager {
-    protected final static String TRANSACTION_LOG_FILENAME = "transactions.log";
-    protected String myRMIName = null; // Used to distinguish this RM from others
-    protected String dieTime;
+    private final static String TRANSACTION_LOG_FILENAME = "transactions.log";
+    private String myRMIName = null; // Used to distinguish this RM from others
+    private String dieTime;
     // RMs
-    protected HashSet xids = new HashSet();
+    private HashSet xids = new HashSet();
     protected TransactionManager tm = null;
-    protected LockManager lm = new LockManager();
-    protected Hashtable tables = new Hashtable();
+    private LockManager lm = new LockManager();
+    private Hashtable tables = new Hashtable();
 
     public ResourceManagerImpl(String rmiName) throws RemoteException {
         // check whether the resource is valid
@@ -334,7 +334,7 @@ public class ResourceManagerImpl extends java.rmi.server.UnicastRemoteObject imp
         }
     }
 
-    public Collection query(int xid, String tablename) throws
+    public Collection<ResourceItem> query(int xid, String tablename) throws
             DeadlockException, InvalidTransactionException, RemoteException {
         if (xid < 0) {
             throw new InvalidTransactionException(xid, "Xid must be positive.");
@@ -353,7 +353,7 @@ public class ResourceManagerImpl extends java.rmi.server.UnicastRemoteObject imp
         if (dieTime.equals("AfterEnlist"))
             dieNow();
 
-        Collection result = new ArrayList();
+        Collection<ResourceItem> result = new ArrayList<>();
         RMTable table = getTable(xid, tablename);
         synchronized (table) {
             for (Iterator iter = table.keySet().iterator(); iter.hasNext(); ) {
@@ -403,7 +403,7 @@ public class ResourceManagerImpl extends java.rmi.server.UnicastRemoteObject imp
         return null;
     }
 
-    public Collection query(int xid, String tablename, String indexName, Object indexVal) throws DeadlockException,
+    public Collection<ResourceItem> query(int xid, String tablename, String indexName, Object indexVal) throws DeadlockException,
             InvalidTransactionException, InvalidIndexException, RemoteException {
         if (xid < 0) {
             throw new InvalidTransactionException(xid, "Xid must be positive.");
@@ -421,7 +421,7 @@ public class ResourceManagerImpl extends java.rmi.server.UnicastRemoteObject imp
         if (dieTime.equals("AfterEnlist"))
             dieNow();
 
-        Collection result = new ArrayList();
+        Collection<ResourceItem> result = new ArrayList<>();
         RMTable table = getTable(xid, tablename);
         synchronized (table) {
             for (Iterator iter = table.keySet().iterator(); iter.hasNext(); ) {
@@ -586,9 +586,13 @@ public class ResourceManagerImpl extends java.rmi.server.UnicastRemoteObject imp
     public boolean prepare(int xid) throws InvalidTransactionException, RemoteException {
         if (dieTime.equals("BeforePrepare"))
             dieNow();
+
         if (xid < 0) {
             throw new InvalidTransactionException(xid, "Xid must be positive.");
         }
+
+        // AfterPrepare: die after it has entered the prepared state, but just before it
+        //     * could reply "prepared" to the TM.
         if (dieTime.equals("AfterPrepare"))
             dieNow();
         return true;

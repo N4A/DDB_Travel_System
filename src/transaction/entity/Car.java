@@ -47,9 +47,18 @@ public class Car extends ResourceItem {
         this.numAvail -= num;
     }
 
+    public void unbookCars(int num) {
+        this.numAvail += num;
+    }
+
     public void addCars(int num) {
         this.numCars += num;
         this.numAvail += num;
+    }
+
+    public void deleteCars(int num) {
+        this.numCars -= num;
+        this.numAvail -= num;
     }
 
     @Override

@@ -18,7 +18,8 @@ public class Reservation extends ResourceItem {
     public static final int RESERVATION_TYPE_FLIGHT = 1;
     public static final int RESERVATION_TYPE_HOTEL = 2;
     public static final int RESERVATION_TYPE_CAR = 3;
-    private static final String INDEX_CUSTNAME = "custName";
+    public static final String INDEX_CUSTNAME = "custName";
+    public static final String INDEX_RESERV_KEY = "resvKey";
     private String custName;
 
     private int resvType;
@@ -36,6 +37,8 @@ public class Reservation extends ResourceItem {
     public Object getIndex(String indexName) throws InvalidIndexException {
         if (indexName.equals(INDEX_CUSTNAME))
             return custName;
+        else if (indexName.equals(INDEX_RESERV_KEY))
+            return resvKey;
         else
             throw new InvalidIndexException(indexName);
     }

@@ -2,13 +2,14 @@ package transaction;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.List;
 
 /**
  * Interface for the Workflow Controller of the Distributed Travel
  * Reservation System.
  * <p>
  * Failure reporting is done using two pieces, exceptions and boolean
- * return values.  Exceptions are used for system things - like
+ * return values.  Exceptions are used for systemy things - like
  * transactions that were forced to abort, or don't exist.  Return
  * values are used for operations that would affect the consistency of
  * the database, like the deletion of more cars than there are.
@@ -131,7 +132,7 @@ public interface WorkflowController extends Remote {
 
     /**
      * Delete rooms from a location.
-     * This subtracts from both the total and the available room count
+     * This subtracts from both the toal and the available room count
      * (rooms not allocated to a customer).  It should fail if it
      * would make the count of available rooms negative.
      *
@@ -304,14 +305,34 @@ public interface WorkflowController extends Remote {
             TransactionAbortedException,
             InvalidTransactionException;
 
+    /**
+     * Reserve a room for this customer at the specified location.
+     */
+    public boolean reserveRoom(int xid, String custName, String location)
+            throws RemoteException,
+            TransactionAbortedException,
+            InvalidTransactionException;
+
+
     //////////
     // TECHNICAL/TESTING INTERFACE
     //////////
 
     /**
-     * Reserve a room for this customer at the specified location.
+     * Reserve an entire itinerary on behalf of this customer.
+     *
+     * @param xid           id of transaction.
+     * @param custName      name of customer.
+     * @param flightNumList list of String flight numbers.
+     * @param location      location of car & hotel, if needed.
+     * @param needCar       whether itinerary includes a car reservation.
+     * @param needRoom      whether itinerary includes a hotel reservation.
+     * @return true on success, false on failure. (Any needed flights/car/room doesn't exist or not available...)
+     * @throws RemoteException             on communications failure.
+     * @throws TransactionAbortedException if transaction was aborted.
+     * @throws InvalidTransactionException if transaction id is invalid.
      */
-    public boolean reserveRoom(int xid, String custName, String location)
+    public boolean reserveItinerary(int xid, String custName, List flightNumList, String location, boolean needCar, boolean needRoom)
             throws RemoteException,
             TransactionAbortedException,
             InvalidTransactionException;

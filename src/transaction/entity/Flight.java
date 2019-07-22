@@ -47,6 +47,10 @@ public class Flight extends ResourceItem {
         this.numAvail -= num;
     }
 
+    public void unbookSeats(int num) {
+        this.numAvail += num;
+    }
+
     public void addSeats(int numSeats) {
         this.numSeats += numSeats;
         this.numAvail += numSeats;
