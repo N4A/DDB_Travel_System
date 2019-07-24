@@ -156,6 +156,8 @@ public class ResourceManagerImpl extends java.rmi.server.UnicastRemoteObject imp
             for (int j = 0; j < xdatas.length; j++) {
                 RMTable xtable = getTable(xid, xdatas[j].getName());
                 try {
+//                    reacquire all locks for the transaction
+//                    should ask coordinator for the status of transaction later
                     xtable.relockAll();
                 } catch (DeadlockException e) {
                     throw new RuntimeException(e);
@@ -178,7 +180,17 @@ public class ResourceManagerImpl extends java.rmi.server.UnicastRemoteObject imp
             for (Iterator iter = xids.iterator(); iter.hasNext(); ) {
                 int xid = ((Integer) iter.next()).intValue();
                 System.out.println(myRMIName + " Re-enlist to TM with xid: " + xid);
-                tm.enlist(xid, this);
+                // ask coordinator for the status of transaction
+                String status = tm.enlist(xid, this);
+                if (status.equals(TransactionManager.ABORTED)) {
+                    System.out.println("xid has been aborted: " + xid);
+                    abort(xid);
+                    continue;
+                } else if (status.equals(TransactionManager.COMMITTED)) {
+                    System.out.println("xid has been committed: " + xid);
+                    commit(xid);
+                    continue;
+                }
                 if (dieTime.equals("AfterEnlist"))
                     dieNow();
 //                iter.remove();
@@ -569,6 +581,8 @@ public class ResourceManagerImpl extends java.rmi.server.UnicastRemoteObject imp
         //     * could reply "prepared" to the TM.
         if (dieTime.equals("AfterPrepare"))
             dieNow();
+
+        System.out.println("Prepared: " + xid);
         return true;
     }
 

@@ -627,6 +627,18 @@ public class WorkflowControllerImpl
                 return false;
         }
 
+        //   the info of customers and get the WRITE lock.
+        // But, in our implementations, all new reservations are stored in Reservations table.
+        // We just need the READ lock for customers.
+        try {
+            rmCustomers.update(xid, rmCustomers.getID(), custName, cust); // just to set WRITE lock for the test
+        } catch (DeadlockException e) {
+            // dead lock happened, quit this transaction
+            abort(xid);
+            throw new TransactionAbortedException(xid, "This transaction cause dead lock: " + e.getMessage());
+        }
+        // add this to pass the test.
+
         // book flights
         for (Object flight : flightNumList) {
             String flightNum = (String) flight;

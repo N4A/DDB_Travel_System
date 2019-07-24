@@ -29,7 +29,7 @@
 ```
 Should line 24 wait for line 22 ?
 If so, do like this?
-```java
+```text
     // lock customer,
     // This is for test case Liti3. The case think the reservation action should modify
     //   the info of customers and get the WRITE lock.

@@ -18,6 +18,12 @@ public interface TransactionManager extends Remote {
      */
     public static final String RMIName = "TM";
 
+    // transaction status
+    public static final String INITED = "inited";
+    public static final String PREPARED = "prepared";
+    public static final String COMMITTED = "committed";
+    public static final String ABORTED = "aborted";
+
     public boolean dieNow()
             throws RemoteException;
 
@@ -34,8 +40,9 @@ public interface TransactionManager extends Remote {
      * @param xid transaction id
      * @param rm resource manager
      * @throws RemoteException
+     * @return true for success, false for fail (the xid has been aborted)
      */
-    public void enlist(int xid, ResourceManager rm) throws RemoteException;
+    public String enlist(int xid, ResourceManager rm) throws RemoteException;
 
     /**
      * Start a new transaction, and return its transaction id.
