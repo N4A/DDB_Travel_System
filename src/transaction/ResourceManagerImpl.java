@@ -44,27 +44,29 @@ public class ResourceManagerImpl extends java.rmi.server.UnicastRemoteObject imp
             }
         }
 
-        new Thread(() -> {
-            while (true) {
-                try {
-                    if (tm != null)
-                        tm.ping();
-                } catch (Exception e) {
-                    tm = null;
-                }
+        new Thread() {
+            public void run() {
+                while (true) {
+                    try {
+                        if (tm != null)
+                            tm.ping();
+                    } catch (Exception e) {
+                        tm = null;
+                    }
 
-                if (tm == null) {
-                    reconnect();
-                    System.out.println("reconnect tm!");
+                    if (tm == null) {
+                        reconnect();
+                        System.out.println("reconnect tm!");
+
+                    }
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                    }
 
                 }
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException ignored) {
-                }
-
             }
-        }).start();
+        }.start();
     }
 
     public static void main(String[] args) {
@@ -129,12 +131,13 @@ public class ResourceManagerImpl extends java.rmi.server.UnicastRemoteObject imp
             dataDir.mkdirs();
         }
         File[] datas = dataDir.listFiles();
-        //main table
+        //main table first
         for (int i = 0; i < datas.length; i++) {
             if (datas[i].isDirectory()) {
                 continue;
             }
-            if (datas[i].getName().equals(TRANSACTION_LOG_FILENAME)) {
+            // log file
+            if (datas[i].getName().endsWith(".log")) {
                 continue;
             }
             getTable(datas[i].getName());
@@ -174,14 +177,15 @@ public class ResourceManagerImpl extends java.rmi.server.UnicastRemoteObject imp
             System.out.println(myRMIName + "'s xids is Empty ? " + xids.isEmpty());
             for (Iterator iter = xids.iterator(); iter.hasNext(); ) {
                 int xid = ((Integer) iter.next()).intValue();
-                System.out.println(myRMIName + " Re-enlist to TM with xid" + xid);
+                System.out.println(myRMIName + " Re-enlist to TM with xid: " + xid);
                 tm.enlist(xid, this);
                 if (dieTime.equals("AfterEnlist"))
                     dieNow();
-                //                iter.remove();
+//                iter.remove();
             }
             System.out.println(myRMIName + " bound to TM");
         } catch (Exception e) {
+            e.printStackTrace();
             System.err.println(myRMIName + " enlist error:" + e);
             return false;
         }
@@ -297,41 +301,11 @@ public class ResourceManagerImpl extends java.rmi.server.UnicastRemoteObject imp
     }
 
     protected HashSet loadTransactionLogs() {
-        File xidLog = new File("data/transactions.log");
-        ObjectInputStream oin = null;
-        try {
-            oin = new ObjectInputStream(new FileInputStream(xidLog));
-            return (HashSet) oin.readObject();
-        } catch (Exception e) {
-            return null;
-        } finally {
-            try {
-                if (oin != null)
-                    oin.close();
-            } catch (IOException e1) {
-            }
-        }
+        return (HashSet) utils.loadObject("data/transactions.log");
     }
 
     protected boolean storeTransactionLogs(HashSet xids) {
-        File xidLog = new File("data/transactions.log");
-        xidLog.getParentFile().mkdirs();
-        xidLog.getParentFile().mkdirs();
-        ObjectOutputStream oout = null;
-        try {
-            oout = new ObjectOutputStream(new FileOutputStream(xidLog));
-            oout.writeObject(xids);
-            oout.flush();
-            return true;
-        } catch (Exception e) {
-            return false;
-        } finally {
-            try {
-                if (oout != null)
-                    oout.close();
-            } catch (IOException e1) {
-            }
-        }
+        return utils.storeObject(xids, "data/transactions.log");
     }
 
     public Collection<ResourceItem> query(int xid, String tablename) throws
@@ -634,6 +608,8 @@ public class ResourceManagerImpl extends java.rmi.server.UnicastRemoteObject imp
         synchronized (xids) {
             xids.remove(new Integer(xid));
         }
+
+        System.out.println("Commit xid: " + xid);
     }
 
     public void abort(int xid) throws InvalidTransactionException, RemoteException {
@@ -660,5 +636,6 @@ public class ResourceManagerImpl extends java.rmi.server.UnicastRemoteObject imp
         synchronized (xids) {
             xids.remove(new Integer(xid));
         }
+        System.out.println("Abort xid: " + xid);
     }
 }

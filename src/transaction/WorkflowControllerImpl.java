@@ -29,7 +29,11 @@ public class WorkflowControllerImpl
     private ResourceManager rmCars = null;
     private ResourceManager rmCustomers = null;
 
+    // log
+    private String xidsLog = "data/WC_xids.log";
+
     public WorkflowControllerImpl() throws RemoteException {
+        recover();
 
         while (!reconnect()) {
             // would be better to sleep a while
@@ -60,11 +64,18 @@ public class WorkflowControllerImpl
         }
     }
 
+    private void recover() {
+        Object xids_tmp = utils.loadObject(xidsLog);
+        if (xids_tmp != null)
+            xids = (HashSet<Integer>) xids_tmp;
+    }
+
     // TRANSACTION INTERFACE
     public int start()
             throws RemoteException {
         int xid = tm.start();
         xids.add(xid);
+        utils.storeObject(xids, xidsLog);
         return xid;
     }
 
@@ -76,6 +87,7 @@ public class WorkflowControllerImpl
             throw new InvalidTransactionException(xid, "");
         boolean tmResult = tm.commit(xid);
         xids.remove(xid);
+        utils.storeObject(xids, xidsLog);
         return tmResult;
     }
 
@@ -86,6 +98,7 @@ public class WorkflowControllerImpl
             throw new InvalidTransactionException(xid, "");
         tm.abort(xid);
         xids.remove(xid);
+        utils.storeObject(xids, xidsLog);
     }
 
 
@@ -672,7 +685,10 @@ public class WorkflowControllerImpl
         try {
             if (rmFlights.reconnect() && rmRooms.reconnect() &&
                     rmCars.reconnect() && rmCustomers.reconnect()) {
+                System.out.println("All RMs connect to TM.");
                 return true;
+            } else {
+                System.err.println("Some RM cannot reconnect.");
             }
         } catch (Exception e) {
             System.err.println("Some RM cannot reconnect:" + e);
