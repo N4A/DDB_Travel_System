@@ -20,7 +20,7 @@ public interface ResourceManager extends Remote {
     /**
      * The RMI names a ResourceManager binds to.
      */
-    public static final String RMINameFlights = "RMFlights";
+    String RMINameFlights = "RMFlights";
     public static final String RMINameRooms = "RMRooms";
     public static final String RMINameCars = "RMCars";
     public static final String RMINameCustomers = "RMCustomers";
@@ -30,26 +30,13 @@ public interface ResourceManager extends Remote {
      */
     public static final String TableNameReservations = "Reservations";
 
-    public Set getTransactions() throws RemoteException;
-
-    public Collection getUpdatedRows(int xid, String tablename)
-            throws RemoteException;
-
-    public Collection getUpdatedRows(String tablename) throws RemoteException;
-
     public void setDieTime(String time) throws RemoteException;
 
     public boolean reconnect() throws RemoteException;
 
     public boolean dieNow() throws RemoteException;
 
-    public void ping() throws RemoteException;
-
     public String getID() throws RemoteException;
-
-    public Collection<ResourceItem> query(int xid, String tablename)
-            throws DeadlockException, InvalidTransactionException,
-            RemoteException;
 
     public ResourceItem query(int xid, String tablename, Object key)
             throws DeadlockException, InvalidTransactionException,

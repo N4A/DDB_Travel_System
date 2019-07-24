@@ -95,20 +95,6 @@ public class ResourceManagerImpl extends java.rmi.server.UnicastRemoteObject imp
         }
     }
 
-    public Set getTransactions() {
-        return xids;
-    }
-
-    public Collection getUpdatedRows(int xid, String tablename) {
-        RMTable table = getTable(xid, tablename);
-        return new ArrayList(table.table.values());
-    }
-
-    public Collection getUpdatedRows(String tablename) {
-        RMTable table = getTable(tablename);
-        return new ArrayList(table.table.values());
-    }
-
     public void setDieTime(String time) throws RemoteException {
         dieTime = time;
         System.out.println("Die time set to : " + time);
@@ -116,9 +102,6 @@ public class ResourceManagerImpl extends java.rmi.server.UnicastRemoteObject imp
 
     public String getID() throws RemoteException {
         return myRMIName;
-    }
-
-    public void ping() {
     }
 
     public void recover() {
@@ -234,14 +217,6 @@ public class ResourceManagerImpl extends java.rmi.server.UnicastRemoteObject imp
             return tm;
     }
 
-    public void setTransactionManager(TransactionManager tm) {
-        this.tm = tm;
-    }
-
-    protected LockManager getLockManager() {
-        return lm;
-    }
-
     protected RMTable loadTable(File file) {
         ObjectInputStream oin = null;
         try {
@@ -320,45 +295,6 @@ public class ResourceManagerImpl extends java.rmi.server.UnicastRemoteObject imp
         return utils.storeObject(xids, "data/transactions.log");
     }
 
-    public Collection<ResourceItem> query(int xid, String tablename) throws
-            DeadlockException, InvalidTransactionException, RemoteException {
-        if (xid < 0) {
-            throw new InvalidTransactionException(xid, "Xid must be positive.");
-        }
-        try {
-            synchronized (xids) {
-                xids.add(new Integer(xid));
-                storeTransactionLogs(xids);
-            }
-
-            getTransactionManager().enlist(xid, this);
-        } catch (TransactionManagerUnaccessibleException e) {
-            throw new RemoteException(e.getLocalizedMessage(), e);
-        }
-
-        if (dieTime.equals("AfterEnlist"))
-            dieNow();
-
-        Collection<ResourceItem> result = new ArrayList<>();
-        RMTable table = getTable(xid, tablename);
-        synchronized (table) {
-            for (Iterator iter = table.keySet().iterator(); iter.hasNext(); ) {
-                Object key = iter.next();
-                ResourceItem item = table.get(key);
-                if (item != null && !item.isDeleted()) {
-                    table.lock(key, LockManager.READ);
-                    result.add(item);
-                }
-            }
-            if (!result.isEmpty()) {
-                if (!storeTable(table, new File("data/" + xid + "/" + tablename))) {
-                    throw new RemoteException("System Error: Can't write table to disk!");
-                }
-            }
-        }
-        return result;
-    }
-
     public ResourceItem query(int xid, String tablename, Object key) throws DeadlockException,
             InvalidTransactionException, RemoteException {
         if (xid < 0) {
@@ -377,6 +313,7 @@ public class ResourceManagerImpl extends java.rmi.server.UnicastRemoteObject imp
         if (dieTime.equals("AfterEnlist"))
             dieNow();
 
+        // TODO should aquire the lock first
         RMTable table = getTable(xid, tablename);
         ResourceItem item = table.get(key);
         if (item != null && !item.isDeleted()) {
@@ -408,6 +345,7 @@ public class ResourceManagerImpl extends java.rmi.server.UnicastRemoteObject imp
             dieNow();
 
         Collection<ResourceItem> result = new ArrayList<>();
+        // TODO should aquire the lock first
         RMTable table = getTable(xid, tablename);
         synchronized (table) {
             for (Iterator iter = table.keySet().iterator(); iter.hasNext(); ) {

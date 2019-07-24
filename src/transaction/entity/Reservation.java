@@ -1,8 +1,6 @@
 /*
  * Created on 2005-5-17
  *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
  */
 package transaction.entity;
 
@@ -11,8 +9,6 @@ import transaction.InvalidIndexException;
 /**
  * @author RAdmin
  * <p>
- * TODO To change the template for this generated type comment go to Window -
- * Preferences - Java - Code Style - Code Templates
  */
 public class Reservation extends ResourceItem {
     public static final int RESERVATION_TYPE_FLIGHT = 1;

@@ -1,8 +1,6 @@
 /*
  * Created on 2005-5-18
  *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
  */
 package transaction;
 
@@ -19,8 +17,6 @@ import transaction.entity.ResourceItem;
 /**
  * @author RAdmin
  * <p>
- * TODO To change the template for this generated type comment go to Window -
- * Preferences - Java - Code Style - Code Templates
  */
 public class RMTable implements Serializable {
     protected Hashtable table = new Hashtable();
