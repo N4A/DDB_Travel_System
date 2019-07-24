@@ -17,16 +17,17 @@ public class TransactionManagerImpl
         extends java.rmi.server.UnicastRemoteObject
         implements TransactionManager {
 
-    // all active transactions
-
     private Integer xidCounter; // allocate unique id
     private String dieTime; // dieTime flag
     // resource managers of all transactions
     private HashMap<Integer, HashSet<ResourceManager>> RMs = new HashMap<>();
+    // all active transactions
     private HashMap<Integer, String> xids = new HashMap<>();
-    // transaction to be recovered after died
+    // transaction to be recovered after TM died
     private HashMap<Integer, String> xids_to_be_done = new HashMap<>();
+    // transaction to be recovered after some RMs died
     private HashMap<Integer, Integer> xids_to_be_recovered = new HashMap<>();
+    // TODO merge above two failure recoveries.
 
     //log path
     private String xidCounterPath = "xidCounter.log";
@@ -54,8 +55,8 @@ public class TransactionManagerImpl
             TransactionManagerImpl obj = new TransactionManagerImpl();
             Naming.rebind(rmiPort + TransactionManager.RMIName, obj);
 
-            // redone_logs log committed transaction
-            obj.redone_logs();
+            // redo log committed transaction
+            obj.redo_logs();
 
             System.out.println("TM bound");
         } catch (Exception e) {
@@ -65,7 +66,7 @@ public class TransactionManagerImpl
         }
     }
 
-    private void redone_logs() {
+    private void redo_logs() {
         if (!xids_to_be_done.isEmpty()) {
             System.out.println("Redo logs");
             for (Integer xidTmp : xids_to_be_done.keySet()) {
@@ -80,7 +81,7 @@ public class TransactionManagerImpl
                                     System.out.println("Enough rm. Total RM num: " + rm_num +
                                             ", at now: " + RMs.get(xidTmp).size());
                                     if (status.equals(COMMITTED)) {
-                                        // redone_logs
+                                        // redo_logs
                                         commit(xidTmp);
                                     } else {
                                         abort(xidTmp);

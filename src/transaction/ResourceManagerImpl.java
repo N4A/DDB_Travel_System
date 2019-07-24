@@ -313,11 +313,24 @@ public class ResourceManagerImpl extends java.rmi.server.UnicastRemoteObject imp
         if (dieTime.equals("AfterEnlist"))
             dieNow();
 
-        // TODO should aquire the lock first
+        // read twice, first to get lock, then to read.
+        // if the item hasn't been locked by other transactions, just read twice and the results are same
+        // if the item has been locked by other transactions, then wait for lock and read new result.
+        // first to get lock
         RMTable table = getTable(xid, tablename);
         ResourceItem item = table.get(key);
         if (item != null && !item.isDeleted()) {
             table.lock(key, LockManager.READ);
+
+            // then to read values
+            // remove old value
+            Hashtable xidtables = (Hashtable) tables.get(xid); // can not be null
+            synchronized (xidtables) {
+                xidtables.remove(tablename);
+            }
+            // read new value
+            table = getTable(xid, tablename);
+            item = table.get(key);
             if (!storeTable(table, new File("data/" + xid + "/" + tablename))) {
                 throw new RemoteException("System Error: Can't write table to disk!");
             }
@@ -345,7 +358,11 @@ public class ResourceManagerImpl extends java.rmi.server.UnicastRemoteObject imp
             dieNow();
 
         Collection<ResourceItem> result = new ArrayList<>();
-        // TODO should aquire the lock first
+
+        // read twice, first to get lock, then to read.
+        // if the item hasn't been locked by other transactions, just read twice and the results are same
+        // if the item has been locked by other transactions, then wait for lock and read new result.
+        // first to get lock
         RMTable table = getTable(xid, tablename);
         synchronized (table) {
             for (Iterator iter = table.keySet().iterator(); iter.hasNext(); ) {
@@ -353,6 +370,24 @@ public class ResourceManagerImpl extends java.rmi.server.UnicastRemoteObject imp
                 ResourceItem item = table.get(key);
                 if (item != null && !item.isDeleted() && item.getIndex(indexName).equals(indexVal)) {
                     table.lock(key, LockManager.READ);
+                }
+            }
+        }
+
+        // then to read values
+        // remove old value
+        Hashtable xidtables = (Hashtable) tables.get(xid); // can not be null
+        synchronized (xidtables) {
+            xidtables.remove(tablename);
+        }
+        // read new value
+        table = getTable(xid, tablename);
+        synchronized (table) {
+            for (Iterator iter = table.keySet().iterator(); iter.hasNext(); ) {
+                Object key = iter.next();
+                ResourceItem item = table.get(key);
+                if (item != null && !item.isDeleted() && item.getIndex(indexName).equals(indexVal)) {
+                    // table.lock(key, LockManager.READ); // have been locked
                     result.add(item);
                 }
             }

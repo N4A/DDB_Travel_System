@@ -4,15 +4,15 @@
  */
 package transaction;
 
+import lockmgr.DeadlockException;
+import lockmgr.LockManager;
+import transaction.entity.ResourceItem;
+
 import java.io.Serializable;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-
-import lockmgr.DeadlockException;
-import lockmgr.LockManager;
-import transaction.entity.ResourceItem;
 
 /**
  * @author RAdmin

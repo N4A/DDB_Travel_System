@@ -73,3 +73,61 @@ If not, design a similar case for the test
 2 exit
 ```
 line 72 should return 40, but actually return 30.
+
+## About resource lock
+wrong case: 
+```text
+        // TODO should aquire the lock first
+        RMTable table = getTable(xid, tablename);
+        ResourceItem item = table.get(key);
+        if (item != null && !item.isDeleted()) {
+            // TODO value has already been read to memory
+            table.lock(key, LockManager.READ);
+            if (!storeTable(table, new File("data/" + xid + "/" + tablename))) {
+                throw new RemoteException("System Error: Can't write table to disk!");
+            }
+            return item;
+        }
+```
+A simple solution
+```text
+        // get lock before read from disk
+        if (!lm.lock(xid, tablename + ":" + key.toString(), LockManager.READ))
+            throw new RuntimeException();
+        RMTable table = getTable(xid, tablename);
+        ResourceItem item = table.get(key);
+        if (item != null && !item.isDeleted()) {
+            // put lock record
+            table.putLock(key, LockManager.READ);
+            if (!storeTable(table, new File("data/" + xid + "/" + tablename))) {
+                throw new RemoteException("System Error: Can't write table to disk!");
+            }
+            return item;
+        }
+```
+A more reasonable solution
+```text
+        // read twice, first to get lock, then to read.
+        // if the item hasn't been locked by other transactions, just read twice and the results are same
+        // if the item has been locked by other transactions, then wait for lock and read new result.
+        // first to get lock
+        RMTable table = getTable(xid, tablename);
+        ResourceItem item = table.get(key);
+        if (item != null && !item.isDeleted()) {
+            table.lock(key, LockManager.READ);
+            
+            // then to read values
+            // remove old value
+            Hashtable xidtables = (Hashtable) tables.get(xid); // can not be null
+            synchronized (xidtables) {
+                xidtables.remove(tablename);
+            }
+            // read new value
+            table = getTable(xid, tablename);
+            item = table.get(key);
+            if (!storeTable(table, new File("data/" + xid + "/" + tablename))) {
+                throw new RemoteException("System Error: Can't write table to disk!");
+            }
+            return item;
+        }
+```

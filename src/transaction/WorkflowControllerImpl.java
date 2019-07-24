@@ -758,7 +758,7 @@ public class WorkflowControllerImpl
             throws RemoteException {
         // which RM to kill; must be "RMFlights", "RMRooms", "RMCars", or "RMCustomers".
         //TODO The provided RM use direct String, use predefined
-        // dietime constant instead of String. The follows are same.
+        // dietime constant variable instead of String. The follows are same.
         return dieRMByTime(who, "AfterEnlist");
     }
 
