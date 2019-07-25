@@ -36,3 +36,75 @@ DDB course project: 分布式旅游预订系统
     - 为客户预定航班的座位
 - 租车和旅馆数据有着类似操作
 - 需要实现的操作在接口文件WorkflowController.java中描述
+
+## 1.4 分布式事务管理
+实现 TransactionManager and ResourceManager
+
+# 2. 项目介绍
+## 2.1 文件介绍
+- assets: 一些素材。
+    - img: 图片
+- doc: 一些文档：教程，笔记
+- src: 项目源码
+    - lockmgr: 锁管理器
+    - test.part2: 测试文件
+    - transaction: 分布式事务系统实现
+- run_test.sh: the script to run test.
+- run_server.sh: the script to run server only.
+- README: this file.
+
+## 2.2 运行与测试
+### 2.2.1. 环境：
+tested on Ubuntu 16.04. 
+
+简单介绍：服务地址为localhost:port/RMIName. port 配置为 3345，可以在src/transaction/Makefile 下修改。3345一般空闲，可以不改。
+RMIName 为各个服务例如WC,TM,RMs 的名字，涉及文件较多，建议不要修改。
+### 2.2.2. 运行服务:
+切换到根目录：DDB_PJ/, 然后执行脚本
+```bash
+sudo bash run_server.sh
+```
+该脚本会启用WC,TM和所有的RM.
+启动新的窗口，然后可以运行src/transaction/SimpleClient.java简单测试服务。启动命令：
+```bash
+sudo bash run_simple_client.sh
+```
+建议使用linux环境，如非 Ubuntu，命令可能略有不同，打开脚本自行修改。
+### 2.2.3. 运行自动化测试:
+可以采用编写的测试环境执行自动化测试，参考：[https://www.ics.uci.edu/~cs223/projects/projects2.html](https://www.ics.uci.edu/~cs223/projects/projects2.html).
+
+简单介绍：
+目录为src/test.part2
+- results: 各个测试案例测试结果
+- scripts: 所有的测试案例。格式如下：
+```text
+第一行：使用线程数。
+# 接下来是测试命令
+线程id 命令 参数
+```
+demo:
+```text
+1
+1 call start
+1 return
+1 exit
+```
+具体使用可以查看其它测试案例，可以结合src/transaction/Client.java 查看执行逻辑。
+
+运行自动测试：切换到根目录DDB_PJ, 运行测试脚本：
+```bash
+sudo bash run_test.sh
+```
+如果修改了src/transaction/Makefile 里配置的端口，请打开 run_test.sh 对应修改。
+测试结果会写到results目录下对应的文件里。运行脚本会有一些异常，一些常见的异常可以打开脚本
+查看注释。
+
+编写测试用例：
+- 打开MASTER.xml添加测试用例的名字，如下
+```xml
+<test id="test case name">
+    some description: test purpose or the most likely reason of the failure of the test.
+</test>
+```
+- 在scripts目录下添加id对应文件名的测试用例。
+    
