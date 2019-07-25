@@ -1,0 +1,42 @@
+1
+1 call start
+1 return
+1 call addFlight xid "347" 100 310
+1 return true
+1 call addFlight xid "3471" 1001 3101
+1 return true
+1 call addRooms xid "Stanford" 200 150
+1 return true
+1 call addCars xid "SFO" 300 30
+1 return true
+1 call newCustomer xid "John"
+1 return true
+1 call commit xid
+1 return true
+1 call start
+1 return
+1 call reserveItinerary xid "John" (347,3471) "Stanford" false true
+1 return true
+1 call abort xid
+1 return
+1 call start
+1 return
+1 call queryFlight xid "347"
+1 return 100
+1 call queryFlightPrice xid "347"
+1 return 310
+1 call queryFlight xid "3471" 
+1 return 1001
+1 call queryFlightPrice xid "3471"
+1 return 3101
+1 call queryRooms xid "Stanford"
+1 return 200
+1 call queryRoomsPrice xid "Stanford"
+1 return 150
+1 call queryCars xid "SFO"
+1 return 300
+1 call queryCarsPrice xid "SFO"
+1 return 30
+1 call queryCustomerBill xid "John"
+1 return 0
+1 exit

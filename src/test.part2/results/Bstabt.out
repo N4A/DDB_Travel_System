@@ -1,0 +1,20 @@
+TM launched
+RMFlights launched
+RMRooms launched
+RMCars launched
+RMCustomers launched
+WC launched
+Bound to WC
+[M] Launching 1 threads.
+[1] Thread running.
+[1] 	LINE--1 call start
+[1] Calling start
+[1] start returned: 1
+[1] xid set to 1
+[1] 	LINE--1 return
+[1] 	LINE--1 call abort xid
+[1] Calling abort
+[1] abort returned: null
+[1] 	LINE--1 return
+[1] 	LINE--1 exit
+[1] Test exiting.

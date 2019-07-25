@@ -1,0 +1,6 @@
+1
+1 call start
+1 return
+1 call addFlight 7123894 "347" 100 310
+1 except transaction.InvalidTransactionException
+1 exit

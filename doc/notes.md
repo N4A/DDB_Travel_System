@@ -92,6 +92,8 @@ wrong case:
 A simple solution
 ```text
         // get lock before read from disk
+        // will lock the un-existed item that maybe inserted later
+        // can not work if we don't know the key.
         if (!lm.lock(xid, tablename + ":" + key.toString(), LockManager.READ))
             throw new RuntimeException();
         RMTable table = getTable(xid, tablename);
@@ -130,4 +132,48 @@ A more reasonable solution
             }
             return item;
         }
+```
+For the case we don't know the keys
+```text
+        Collection<ResourceItem> result = new ArrayList<>();
+
+        // read twice, first to get lock, then to read.
+        // if the item hasn't been locked by other transactions, just read twice and the results are same
+        // if the item has been locked by other transactions, then wait for lock and read new result.
+        // first to get lock
+        RMTable table = getTable(xid, tablename);
+        synchronized (table) {
+            for (Iterator iter = table.keySet().iterator(); iter.hasNext(); ) {
+                Object key = iter.next();
+                ResourceItem item = table.get(key);
+                if (item != null && !item.isDeleted() && item.getIndex(indexName).equals(indexVal)) {
+                    table.lock(key, LockManager.READ);
+                }
+            }
+        }
+
+        // then to read values
+        // remove old value
+        Hashtable xidtables = (Hashtable) tables.get(xid); // can not be null
+        synchronized (xidtables) {
+            xidtables.remove(tablename);
+        }
+        // read new value
+        table = getTable(xid, tablename);
+        synchronized (table) {
+            for (Iterator iter = table.keySet().iterator(); iter.hasNext(); ) {
+                Object key = iter.next();
+                ResourceItem item = table.get(key);
+                if (item != null && !item.isDeleted() && item.getIndex(indexName).equals(indexVal)) {
+                    // table.lock(key, LockManager.READ); // have been locked
+                    result.add(item);
+                }
+            }
+            if (!result.isEmpty()) {
+                if (!storeTable(table, new File("data/" + xid + "/" + tablename))) {
+                    throw new RemoteException("System Error: Can't write table to disk!");
+                }
+            }
+        }
+        return result;
 ```

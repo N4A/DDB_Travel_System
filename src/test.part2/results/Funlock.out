@@ -1,0 +1,51 @@
+TM launched
+RMFlights launched
+RMRooms launched
+RMCars launched
+RMCustomers launched
+WC launched
+Bound to WC
+[M] Launching 2 threads.
+[1] Thread running.
+[2] Thread running.
+[1] 	LINE--1 call start
+[1] Calling start
+[1] start returned: 1
+[1] xid set to 1
+[1] 	LINE--1 return
+[1] 	LINE--1 call addFlight xid "347" 100 310
+[1] Calling addFlight
+[1] addFlight returned: true
+[1] 	LINE--1 return true
+[1] 	LINE--1 call commit xid
+[1] Calling commit
+[1] commit returned: true
+[1] 	LINE--1 return true
+[1] 	LINE--1 call start
+[1] Calling start
+[1] start returned: 2
+[1] xid set to 2
+[1] 	LINE--1 return
+[2] 	LINE--2 call start
+[2] Calling start
+[2] start returned: 3
+[2] xid set to 3
+[2] 	LINE--2 return
+[1] 	LINE--1 call addFlight xid "347" 100 620
+[1] Calling addFlight
+[1] addFlight returned: true
+[1] 	LINE--1 return true
+[2] 	LINE--2 call queryFlight xid "347"
+[2] Calling queryFlight
+[1] 	LINE--1 call dieTMAfterCommit
+[1] Calling dieTMAfterCommit
+[1] dieTMAfterCommit returned: true
+[1] 	LINE--1 return true
+[1] 	LINE--1 call commit xid
+[1] Calling commit
+[1] commit exceptioned: java.rmi.ServerException
+[1] 	LINE--1 except java.rmi.RemoteException
+[2] queryFlight exceptioned: java.rmi.ServerException
+[2] 	LINE--2 except
+[2] 	LINE--2 exit
+[2] Test exiting.

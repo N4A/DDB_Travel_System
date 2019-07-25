@@ -1,0 +1,20 @@
+2
+1 call start
+1 return
+1 call addFlight xid "347" 100 310
+1 return true
+1 call commit xid
+1 return true
+1 call start
+1 return
+2 call start
+2 return
+1 call addFlight xid "347" 100 620
+1 return true
+2 call queryFlight xid "347"
+1 call dieTMAfterCommit
+1 return true
+1 call commit xid
+1 except java.rmi.RemoteException
+2 except
+2 exit

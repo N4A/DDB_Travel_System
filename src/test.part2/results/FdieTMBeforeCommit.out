@@ -1,0 +1,118 @@
+TM launched
+RMFlights launched
+RMRooms launched
+RMCars launched
+RMCustomers launched
+WC launched
+Bound to WC
+[M] Launching 1 threads.
+[1] Thread running.
+[1] 	LINE--1 call start
+[1] Calling start
+[1] start returned: 1
+[1] xid set to 1
+[1] 	LINE--1 return
+[1] 	LINE--1 call addFlight xid "347" 100 310
+[1] Calling addFlight
+[1] addFlight returned: true
+[1] 	LINE--1 return true
+[1] 	LINE--1 call addRooms xid "Stanford" 200 150
+[1] Calling addRooms
+[1] addRooms returned: true
+[1] 	LINE--1 return true
+[1] 	LINE--1 call addCars xid "SFO" 300 30
+[1] Calling addCars
+[1] addCars returned: true
+[1] 	LINE--1 return true
+[1] 	LINE--1 call newCustomer xid "John"
+[1] Calling newCustomer
+[1] newCustomer returned: true
+[1] 	LINE--1 return true
+[1] 	LINE--1 call commit xid
+[1] Calling commit
+[1] commit returned: true
+[1] 	LINE--1 return true
+[1] 	LINE--1 call start
+[1] Calling start
+[1] start returned: 2
+[1] xid set to 2
+[1] 	LINE--1 return
+[1] 	LINE--1 call addFlight xid "347" 100 620
+[1] Calling addFlight
+[1] addFlight returned: true
+[1] 	LINE--1 return true
+[1] 	LINE--1 call addRooms xid "Stanford" 200 300
+[1] Calling addRooms
+[1] addRooms returned: true
+[1] 	LINE--1 return true
+[1] 	LINE--1 call addCars xid "SFO" 300 60
+[1] Calling addCars
+[1] addCars returned: true
+[1] 	LINE--1 return true
+[1] 	LINE--1 call dieTMBeforeCommit
+[1] Calling dieTMBeforeCommit
+[1] dieTMBeforeCommit returned: true
+[1] 	LINE--1 return true
+[1] 	LINE--1 call commit xid
+[1] Calling commit
+[1] commit exceptioned: java.rmi.ServerException
+[1] 	LINE--1 except java.rmi.RemoteException
+[1] 	LINE--1 launch TM
+TM launched
+[1] 	LINE--1 call dieNow "RMFlights"
+[1] Calling dieNow
+[1] dieNow returned: true
+[1] 	LINE--1 return true
+[1] 	LINE--1 launch RMFlights
+RMFlights launched
+[1] 	LINE--1 call dieNow "RMRooms"
+[1] Calling dieNow
+[1] dieNow returned: true
+[1] 	LINE--1 return true
+[1] 	LINE--1 launch RMRooms
+RMRooms launched
+[1] 	LINE--1 call dieNow "RMCars"
+[1] Calling dieNow
+[1] dieNow returned: true
+[1] 	LINE--1 return true
+[1] 	LINE--1 launch RMCars
+RMCars launched
+[1] 	LINE--1 call reconnect
+[1] Calling reconnect
+[1] reconnect returned: true
+[1] 	LINE--1 return true
+[1] 	LINE--1 call start
+[1] Calling start
+[1] start returned: 3
+[1] xid set to 3
+[1] 	LINE--1 return
+[1] 	LINE--1 call queryFlight xid "347"
+[1] Calling queryFlight
+[1] queryFlight returned: 100
+[1] 	LINE--1 return 100
+[1] 	LINE--1 call queryFlightPrice xid "347"
+[1] Calling queryFlightPrice
+[1] queryFlightPrice returned: 310
+[1] 	LINE--1 return 310
+[1] 	LINE--1 call queryRooms xid "Stanford"
+[1] Calling queryRooms
+[1] queryRooms returned: 200
+[1] 	LINE--1 return 200
+[1] 	LINE--1 call queryRoomsPrice xid "Stanford"
+[1] Calling queryRoomsPrice
+[1] queryRoomsPrice returned: 150
+[1] 	LINE--1 return 150
+[1] 	LINE--1 call queryCars xid "SFO"
+[1] Calling queryCars
+[1] queryCars returned: 300
+[1] 	LINE--1 return 300
+[1] 	LINE--1 call queryCarsPrice xid "SFO"
+[1] Calling queryCarsPrice
+[1] queryCarsPrice returned: 30
+[1] 	LINE--1 return 30
+[1] 	LINE--1 call queryCustomerBill xid "John"
+[1] Calling queryCustomerBill
+[1] queryCustomerBill returned: 0
+[1] 	LINE--1 return 0
+[1] 	LINE--1 exit
+[1] Test exiting.

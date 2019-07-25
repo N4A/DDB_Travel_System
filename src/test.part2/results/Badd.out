@@ -1,0 +1,32 @@
+TM launched
+RMFlights launched
+RMRooms launched
+RMCars launched
+RMCustomers launched
+WC launched
+Bound to WC
+[M] Launching 1 threads.
+[1] Thread running.
+[1] 	LINE--1 call start
+[1] Calling start
+[1] start returned: 1
+[1] xid set to 1
+[1] 	LINE--1 return
+[1] 	LINE--1 call addFlight xid "347" 100 310
+[1] Calling addFlight
+[1] addFlight returned: true
+[1] 	LINE--1 return true
+[1] 	LINE--1 call addRooms xid "Stanford" 200 150
+[1] Calling addRooms
+[1] addRooms returned: true
+[1] 	LINE--1 return true
+[1] 	LINE--1 call addCars xid "SFO" 300 30
+[1] Calling addCars
+[1] addCars returned: true
+[1] 	LINE--1 return true
+[1] 	LINE--1 call newCustomer xid "John"
+[1] Calling newCustomer
+[1] newCustomer returned: true
+[1] 	LINE--1 return true
+[1] 	LINE--1 exit
+[1] Test exiting.
