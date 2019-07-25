@@ -49,8 +49,9 @@ DDB course project: 分布式旅游预订系统
     - lockmgr: 锁管理器
     - test.part2: 测试文件
     - transaction: 分布式事务系统实现
-- run_test.sh: the script to run test.
+- run_test.sh: the script to run auto test.
 - run_server.sh: the script to run server only.
+- run_simple_client.sh: the scripts to run a simple client to test server.
 - README: this file.
 
 ## 2.2 运行与测试
@@ -75,7 +76,7 @@ sudo bash run_simple_client.sh
 
 简单介绍：
 目录为src/test.part2
-- results: 各个测试案例测试结果
+- results: 各个测试案例测试结果. 已经包含一部分案例的正确测试结果，提供参考。
 - scripts: 所有的测试案例。格式如下：
 ```text
 第一行：使用线程数。
