@@ -69,7 +69,7 @@ If not, design a similar case for the test
 2 call queryCarsPrice "SFO"
 1 call commit xid
 1 return true
-2 return 
+2 return 40
 2 exit
 ```
 line 72 should return 40, but actually return 30.

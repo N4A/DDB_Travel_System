@@ -56,7 +56,7 @@ DDB course project: 分布式旅游预订系统
 
 ## 2.2 运行与测试
 ### 2.2.1. 环境：
-tested on Ubuntu 16.04. 
+tested on Ubuntu 16.04 with openjdk version "1.8.0_212".
 
 简单介绍：服务地址为localhost:port/RMIName. port 配置为 3345，可以在src/transaction/Makefile 下修改。3345一般空闲，可以不改。
 RMIName 为各个服务例如WC,TM,RMs 的名字，涉及文件较多，建议不要修改。
@@ -107,5 +107,4 @@ sudo bash run_test.sh
     some description: test purpose or the most likely reason of the failure of the test.
 </test>
 ```
-- 在scripts目录下添加id对应文件名的测试用例。
-    
+- 在scripts目录下添加id对应文件名的测试用例。    
