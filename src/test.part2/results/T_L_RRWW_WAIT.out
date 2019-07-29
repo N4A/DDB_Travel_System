@@ -1,0 +1,68 @@
+TM launched
+RMFlights launched
+RMRooms launched
+RMCars launched
+RMCustomers launched
+WC launched
+Bound to WC
+[M] Launching 2 threads.
+[1] Thread running.
+[2] Thread running.
+[1] 	LINE--1 call start
+[1] Calling start
+[1] start returned: 1
+[1] xid set to 1
+[1] 	LINE--1 return
+[1] 	LINE--1 call addCars xid "SFO" 300 30
+[1] Calling addCars
+[1] addCars returned: true
+[1] 	LINE--1 return true
+[1] 	LINE--1 call commit xid
+[1] Calling commit
+[1] commit returned: true
+[1] 	LINE--1 return true
+[1] 	LINE--1 call start
+[1] Calling start
+[1] start returned: 2
+[1] xid set to 2
+[1] 	LINE--1 return
+[2] 	LINE--2 call start
+[2] Calling start
+[2] start returned: 3
+[2] xid set to 3
+[2] 	LINE--2 return
+[1] 	LINE--1 call queryCarsPrice xid "SFO"
+[1] Calling queryCarsPrice
+[1] queryCarsPrice returned: 30
+[1] 	LINE--1 return 30
+[2] 	LINE--2 call queryCarsPrice xid "SFO"
+[2] Calling queryCarsPrice
+[2] queryCarsPrice returned: 30
+[2] 	LINE--2 return 30
+[1] 	LINE--1 call addCars xid "SFO" 300 40
+[1] Calling addCars
+[1] addCars exceptioned: transaction.TransactionAbortedException
+[1] 	LINE--1 except transaction.TransactionAbortedException
+[2] 	LINE--2 call addCars xid "SFO" 300 50
+[2] Calling addCars
+[2] addCars returned: true
+[2] 	LINE--2 return true
+[2] 	LINE--2 call commit xid
+[2] Calling commit
+[2] commit returned: true
+[2] 	LINE--2 return true
+[1] 	LINE--1 call start
+[1] Calling start
+[1] start returned: 4
+[1] xid set to 4
+[1] 	LINE--1 return
+[1] 	LINE--1 call queryCarsPrice xid "SFO"
+[1] Calling queryCarsPrice
+[1] queryCarsPrice returned: 50
+[1] 	LINE--1 return 50
+[1] 	LINE--1 call commit xid
+[1] Calling commit
+[1] commit returned: true
+[1] 	LINE--1 return true
+[1] 	LINE--1 exit
+[1] Test exiting.

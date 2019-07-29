@@ -1,0 +1,1 @@
+[2] Exception rather than return: transaction.TransactionAbortedException: The transaction 3 aborted:This transaction cause dead lock: The transaction 3 is deadlocked:Sleep timeout...deadlock.
