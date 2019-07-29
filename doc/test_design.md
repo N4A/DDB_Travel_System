@@ -37,10 +37,9 @@
     - 写COMMIT log之后宕机，事务成功. T_TM_DAC
     - 事务ABORT的时候宕机，同写COMMIT log前，事务失败. no condition
 - RM 宕机，多个RM，随机选择宕机
-    - 两阶段提交前宕机
-        - PREPARE 前已恢复，事务成功（to be discussed). D_RM_DIE
-        - PREPARE 前未恢复，事务失败 D_RM_DBP
-    - PREPARE 前宕机（已被TM通知过PREPARE），事务失败 D_RM_DBP
-    - PREPARED 后宕机，（未成功发送prepared 消息至TM, 事务失败 D_RM_DAP
-    - COMMIT log 前宕机过程中宕机（已成功发送prepared 消息至TM），事务成功 D_RM_DBC
-    - COMMIT log 后宕机，事务成功 no condition.
+    - 与当前事务无关。事务成功 D_RM_DIE
+    - 与当前事务有关
+        - PREPARE 前宕机（已被TM通知过PREPARE），事务失败 D_RM_DBP
+        - PREPARED 后宕机，（未成功发送prepared 消息至TM, 事务失败 D_RM_DAP
+        - COMMIT log 前宕机过程中宕机（已成功发送prepared 消息至TM），事务成功 D_RM_DBC
+        - COMMIT log 后宕机，事务成功 no condition.

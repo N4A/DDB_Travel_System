@@ -20,7 +20,7 @@ public interface TransactionManager extends Remote {
 
     // transaction status
     public static final String INITED = "inited";
-    public static final String PREPARED = "prepared";
+    public static final String PREPARING = "preparing";
     public static final String COMMITTED = "committed";
     public static final String ABORTED = "aborted";
 

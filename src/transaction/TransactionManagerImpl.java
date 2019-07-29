@@ -23,11 +23,8 @@ public class TransactionManagerImpl
     private HashMap<Integer, HashSet<ResourceManager>> RMs = new HashMap<>();
     // all active transactions
     private HashMap<Integer, String> xids = new HashMap<>();
-    // transaction to be recovered after TM died
-    private HashMap<Integer, String> xids_to_be_done = new HashMap<>();
-    // transaction to be recovered after some RMs died
+    // transaction to be recovered after some RMs died or TM died
     private HashMap<Integer, Integer> xids_to_be_recovered = new HashMap<>();
-    // TODO merge above two failure recoveries.
 
     //log path
     private String xidCounterPath = "xidCounter.log";
@@ -55,62 +52,11 @@ public class TransactionManagerImpl
             TransactionManagerImpl obj = new TransactionManagerImpl();
             Naming.rebind(rmiPort + TransactionManager.RMIName, obj);
 
-            // redo log committed transaction
-            obj.redo_logs();
-
             System.out.println("TM bound");
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("TM not bound:" + e);
             System.exit(1);
-        }
-    }
-
-    private void redo_logs() {
-        if (!xids_to_be_done.isEmpty()) {
-            System.out.println("Redo logs");
-            for (Integer xidTmp : xids_to_be_done.keySet()) {
-                while (true) {
-                    synchronized (RMs) {
-                        if (RMs.containsKey(xidTmp)) {
-                            try {
-                                String[] vals = xids_to_be_done.get(xidTmp).split("_");
-                                String status = vals[0];
-                                int rm_num = Integer.parseInt(vals[1]);
-                                if (RMs.get(xidTmp).size() == rm_num) {
-                                    System.out.println("Enough rm. Total RM num: " + rm_num +
-                                            ", at now: " + RMs.get(xidTmp).size());
-                                    if (status.equals(COMMITTED)) {
-                                        // redo_logs
-                                        commit(xidTmp);
-                                    } else {
-                                        abort(xidTmp);
-                                    }
-                                    break;
-                                } else {
-                                    System.out.println("Wait for enough rm. Total RM num: " + rm_num +
-                                            ", at now: " + RMs.get(xidTmp).size());
-                                }
-
-                            } catch (RemoteException | TransactionAbortedException | InvalidTransactionException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-
-                    try {
-                        System.out.println("Wait RM to be enlisted..");
-                        Thread.sleep(500);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-            synchronized (xids_to_be_done) {
-                // finish
-                xids_to_be_done = new HashMap<>();
-            }
-            System.out.println("Finish redo logs.");
         }
     }
 
@@ -124,14 +70,26 @@ public class TransactionManagerImpl
         if (xidCounterTmp != null)
             xidCounter = (Integer) xidCounterTmp;
 
-        Object xidsTmp = utils.loadObject("data/" + xidsStatusPath);
-        if (xidsTmp != null) {
-            xids_to_be_done = (HashMap<Integer, String>) xidsTmp;
-        }
-
         Object xidsToDo = utils.loadObject("data/" + xidsToBeRecoveredPath);
         if (xidsToDo != null)
             xids_to_be_recovered = (HashMap<Integer, Integer>) xidsToDo;
+
+        Object xidsTmp = utils.loadObject("data/" + xidsStatusPath);
+        if (xidsTmp != null) {
+            HashMap<Integer, String> xids_to_be_done = (HashMap<Integer, String>) xidsTmp;
+            System.out.println("Redo logs");
+            for (Integer xidTmp : xids_to_be_done.keySet()) {
+                String[] vals = xids_to_be_done.get(xidTmp).split("_");
+                String status = vals[0];
+                int rm_num = Integer.parseInt(vals[1]);
+                if (status.equals(COMMITTED)) {
+                    // redo_logs
+                    setRecoveryLater(xidTmp, rm_num);
+                }
+                // else, simply abort. The rms will be informed to abort transaction when they enlist
+            }
+            System.out.println("Finish redo logs.");
+        }
     }
 
     public void ping() throws RemoteException {
@@ -149,7 +107,7 @@ public class TransactionManagerImpl
             }
             return COMMITTED;
         }
-        if (!xids.containsKey(xid) && !xids_to_be_done.containsKey(xid)) {
+        if (!xids.containsKey(xid)) {
             return ABORTED; // the xid has been aborted
         }
         synchronized (RMs) {
@@ -192,6 +150,10 @@ public class TransactionManagerImpl
         HashSet<ResourceManager> xidRMs = RMs.get(xid);
         // 2pc
         // prepare phase
+        synchronized (xids) {
+            xids.put(xid, PREPARING + "_" + xidRMs.size());
+            utils.storeObject(xids, "data/" + xidsStatusPath);
+        }
         for (ResourceManager rm : xidRMs) {
             try {
                 System.out.println("call rm prepare: " + xid + ": " + rm.getID());
@@ -209,11 +171,6 @@ public class TransactionManagerImpl
             }
         }
         // prepared, die before commit if needed
-        synchronized (xids) {
-            xids.put(xid, PREPARED + "_" + xidRMs.size());
-            utils.storeObject(xids, "data/" + xidsStatusPath);
-        }
-
         if (dieTime.equals("BeforeCommit"))
             dieNow();
 
@@ -236,7 +193,7 @@ public class TransactionManagerImpl
                 // rm dies before or during commit
                 System.out.println("rm is down before commit: " + rm);
                 // let the rm to be recovered when it is relaunched.
-                setRecoveryLater(xid);
+                setRecoveryLater(xid, 1);
             }
         }
 
@@ -257,14 +214,14 @@ public class TransactionManagerImpl
         return true;
     }
 
-    private void setRecoveryLater(int xid) {
+    private void setRecoveryLater(int xid, int num) {
         synchronized (xids_to_be_recovered) {
             // use number instead of rm info, for the rm message is difficult to get
             // TODO more solid implementation is needed.
             if (xids_to_be_recovered.containsKey(xid)) {
-                xids_to_be_recovered.put(xid, xids_to_be_recovered.get(xid) + 1);
+                xids_to_be_recovered.put(xid, xids_to_be_recovered.get(xid) + num);
             } else {
-                xids_to_be_recovered.put(xid, 1);
+                xids_to_be_recovered.put(xid, num);
             }
             utils.storeObject(xids_to_be_recovered, xidsToBeRecoveredPath);
         }
@@ -272,7 +229,7 @@ public class TransactionManagerImpl
 
     @Override
     public void abort(int xid) throws RemoteException, InvalidTransactionException {
-        if (!xids.containsKey(xid) && !xids_to_be_done.containsKey(xid)) {
+        if (!xids.containsKey(xid)) {
             throw new InvalidTransactionException(xid, "abort");
         }
         HashSet<ResourceManager> xidRMs = RMs.get(xid);

@@ -15,168 +15,168 @@
 
 <tests totalpoints="100">
 
-    <!--  &lt;!&ndash; Basic tests &ndash;&gt;-->
+    <!-- Basic tests -->
 
-    <!--  <test id="Bstart" fpoints="100" fnext="_END_">-->
-    <!--start() call fails.-->
-    <!--  </test>-->
+    <test id="Bstart" fpoints="100" fnext="_END_">
+        start() call fails.
+    </test>
 
-    <!--  <test id="Bstcmt" fpoints="100" fnext="_END_">-->
-    <!--Cannot commit a non-op transaction.-->
-    <!--  </test>-->
+    <test id="Bstcmt" fpoints="100" fnext="_END_">
+        Cannot commit a non-op transaction.
+    </test>
 
-    <!--  <test id="Bstabt" fpoints="100" fnext="_END_">-->
-    <!--Cannot abort a non-op transaction.-->
-    <!--  </test>-->
+    <test id="Bstabt" fpoints="100" fnext="_END_">
+        Cannot abort a non-op transaction.
+    </test>
 
-    <!--  <test id="Badd" fpoints="100" fnext="_END_">-->
-    <!--Cannot add flight/rooms/cars/customer.-->
-    <!--  </test>-->
+    <test id="Badd" fpoints="100" fnext="_END_">
+        Cannot add flight/rooms/cars/customer.
+    </test>
 
-    <!--  <test id="Baddcmt" fpoints="100" fnext="_END_">-->
-    <!--commit fails after adding flight/rooms/cars/customer.-->
-    <!--  </test>-->
+    <test id="Baddcmt" fpoints="100" fnext="_END_">
+        commit fails after adding flight/rooms/cars/customer.
+    </test>
 
-    <!--  <test id="Baddcmtrd" fpoints="100" fnext="_END_">-->
-    <!--Query of flight/rooms/cars/customer does not return correct result.-->
-    <!--  </test>-->
+    <test id="Baddcmtrd" fpoints="100" fnext="_END_">
+        Query of flight/rooms/cars/customer does not return correct result.
+    </test>
 
-    <!--  <test id="Baddcmtrsv" fpoints="100" fnext="_END_">-->
-    <!--Cannot make reservations.-->
-    <!--  </test>-->
+    <test id="Baddcmtrsv" fpoints="100" fnext="_END_">
+        Cannot make reservations.
+    </test>
 
-    <!--  <test id="Baddabt" fpoints="100" fnext="_END_">-->
-    <!--abort fails after adding flight/rooms/cars/customer.-->
-    <!--  </test>-->
+    <test id="Baddabt" fpoints="100" fnext="_END_">
+        abort fails after adding flight/rooms/cars/customer.
+    </test>
 
-    <!--  <test id="Baddabtrd" fpoints="100" fnext="_END_">-->
-    <!--Query of flight/rooms/cars/customer does not return correct result after an abort.-->
-    <!--  </test>-->
-
-
-    <!--&lt;!&ndash;   Semantic tests&ndash;&gt;-->
-
-    <!--  <test id="Saddcmtdelcmt" fpoints="10">-->
-    <!--Cannot delete items.-->
-    <!--  </test>-->
-
-    <!--  <test id="Sbill">-->
-    <!--Does not compute correct bill.-->
-    <!--  </test>-->
-
-    <!--  <test id="Siticmt">-->
-    <!--query result incorrect after reserveItinerary commits.-->
-    <!--  </test>-->
-
-    <!--  <test id="Sitiabt">-->
-    <!--query result incorrect after reserveItinerary aborts.-->
-    <!--  </test>-->
-
-    <!--  <test id="Sitifail">-->
-    <!--state is not restored after reserveItinerary fails.-->
-    <!--  </test>-->
-
-    <!--  <test id="Saddrd">-->
-    <!--Cannot query items added earlier in same transaction.-->
-    <!--  </test>-->
-
-    <!--  <test id="Sbadxid">-->
-    <!--Bogus xid does not throw InvalidTransactionException.-->
-    <!--  </test>-->
+    <test id="Baddabtrd" fpoints="100" fnext="_END_">
+        Query of flight/rooms/cars/customer does not return correct result after an abort.
+    </test>
 
 
-    <!--&lt;!&ndash;   Locking tests&ndash;&gt;-->
+    <!--   Semantic tests-->
 
-    <!--  <test id="Lconc" fpoints="5">-->
-    <!--Two non-conflicting concurrent transactions fail.-->
-    <!--  </test>-->
+    <test id="Saddcmtdelcmt" fpoints="10">
+        Cannot delete items.
+    </test>
 
-    <!--  <test id="Liti1">-->
-    <!--reserveItinerary does not acquire all necessary locks.-->
-    <!--  </test>-->
+    <test id="Sbill">
+        Does not compute correct bill.
+    </test>
 
-    <!--  <test id="Liti2">-->
-    <!--reserveItinerary does not acquire all necessary locks.-->
-    <!--  </test>-->
+    <test id="Siticmt">
+        query result incorrect after reserveItinerary commits.
+    </test>
 
-    <!--  <test id="Liti3">-->
-    <!--    reserveItinerary does not acquire all necessary locks.-->
-    <!--  </test>-->
+    <test id="Sitiabt">
+        query result incorrect after reserveItinerary aborts.
+    </test>
 
-    <!--  <test id="Ldeadlock" fpoints="5">-->
-    <!--Deadlocked transaction is not aborted.-->
-    <!--  </test>-->
+    <test id="Sitifail">
+        state is not restored after reserveItinerary fails.
+    </test>
 
+    <test id="Saddrd">
+        Cannot query items added earlier in same transaction.
+    </test>
 
-    <!--  &lt;!&ndash; Failure tests &ndash;&gt;-->
-
-    <!--  <test id="FdieAll" fpoints="5">-->
-    <!--After all components fail, previous committed transactions are lost.-->
-    <!--  </test>-->
-
-    <!--  <test id="FdieRM" fpoints="5">-->
-    <!--After RM fails, transaction is not forcibly aborted.-->
-    <!--  </test>-->
-
-    <!--  <test id="FdienpRM" fpoints="5">-->
-    <!--After non-participant RM fails, transaction cannot be committed.-->
-    <!--  </test>-->
-
-    <!--  <test id="FdieWC" fpoints="5">-->
-    <!--After WC fails, transaction cannot be committed.-->
-    <!--  </test>-->
-
-    <!--  <test id="FdieTM" fpoints="5">-->
-    <!--After TM fails, transaction is not forcibly aborted.-->
-    <!--  </test>-->
-
-    <!--  <test id="FdieRMAfterEnlist" fpoints="5">-->
-    <!--dieRMAfterEnlist: transaction is not forcibly aborted.-->
-    <!--  </test>-->
-
-    <!--  <test id="FdieRMBeforePrepare" fpoints="5">-->
-    <!--dieRMBeforePrepare: transaction is not forcibly aborted.-->
-    <!--  </test>-->
+    <test id="Sbadxid">
+        Bogus xid does not throw InvalidTransactionException.
+    </test>
 
 
-    <!--  <test id="FdieRMAfterPrepare" fpoints="5">-->
-    <!--dieRMAfterPrepare: transaction is not forcibly aborted.-->
-    <!--  </test>-->
+    <!--   Locking tests-->
 
-    <!--  <test id="FdieTMBeforeCommit" fpoints="5">-->
-    <!--dieTMBeforeCommit: transaction is not forcibly aborted.-->
-    <!--  </test>-->
+    <test id="Lconc" fpoints="5">
+        Two non-conflicting concurrent transactions fail.
+    </test>
 
-    <!--  <test id="FdieTMAfterCommit" fpoints="5">-->
-    <!--dieTMAfterCommit: transaction is not committed.-->
-    <!--  </test>-->
+    <test id="Liti1">
+        reserveItinerary does not acquire all necessary locks.
+    </test>
 
-    <!--  <test id="FdieRMBeforeCommit" fpoints="5">-->
-    <!--dieRMBeforeCommit: RM does not recover properly.-->
-    <!--  </test>-->
+    <test id="Liti2">
+        reserveItinerary does not acquire all necessary locks.
+    </test>
 
-    <!--  <test id="Funlock" fpoints="5">-->
-    <!--RM releases locks before final commit.-->
-    <!--  </test>-->
+    <test id="Liti3">
+        reserveItinerary does not acquire all necessary locks.
+    </test>
 
-    <!--   new tests-->
-    <!--  concurrency tests-->
-    <!--    <test id="T_L_WR" fpoints="0">-->
-    <!--        1. add.. should acquire all necessary locks.-->
-    <!--        2. query.. should wait locks first and then read data from disk.-->
-    <!--    </test>-->
+    <test id="Ldeadlock" fpoints="5">
+        Deadlocked transaction is not aborted.
+    </test>
 
-    <!--    <test id="T_L_RRWW" fpoints="0">-->
-    <!--        dead lock. 1 read A, 2 read A, 1 write A, 2 write A.-->
-    <!--        This maybe not passed by current lock implementation.-->
-    <!--    </test>-->
 
-    <!--        <test id="T_L_RRWW_PASS" fpoints="0">-->
-    <!--            dead lock. 1 read A, 2 read A, 1 write A, 2 write A.-->
-    <!--            if 1 or 2 is aborted, the other should be processed.-->
-    <!--            But actually the lock is based on time. 1 will be abort first, and then 2-->
-    <!--            will be abort because 1 and 2 wait the lock almost at the same time.-->
-    <!--        </test>-->
+    <!-- Failure tests -->
+
+    <test id="FdieAll" fpoints="5">
+        After all components fail, previous committed transactions are lost.
+    </test>
+
+    <test id="FdieRM" fpoints="5">
+        After RM fails, transaction is not forcibly aborted.
+    </test>
+
+    <test id="FdienpRM" fpoints="5">
+        After non-participant RM fails, transaction cannot be committed.
+    </test>
+
+    <test id="FdieWC" fpoints="5">
+        After WC fails, transaction cannot be committed.
+    </test>
+
+    <test id="FdieTM" fpoints="5">
+        After TM fails, transaction is not forcibly aborted.
+    </test>
+
+    <test id="FdieRMAfterEnlist" fpoints="5">
+        dieRMAfterEnlist: transaction is not forcibly aborted.
+    </test>
+
+    <test id="FdieRMBeforePrepare" fpoints="5">
+        dieRMBeforePrepare: transaction is not forcibly aborted.
+    </test>
+
+
+    <test id="FdieRMAfterPrepare" fpoints="5">
+        dieRMAfterPrepare: transaction is not forcibly aborted.
+    </test>
+
+    <test id="FdieTMBeforeCommit" fpoints="5">
+        dieTMBeforeCommit: transaction is not forcibly aborted.
+    </test>
+
+    <test id="FdieTMAfterCommit" fpoints="5">
+        dieTMAfterCommit: transaction is not committed.
+    </test>
+
+    <test id="FdieRMBeforeCommit" fpoints="5">
+        dieRMBeforeCommit: RM does not recover properly.
+    </test>
+
+    <test id="Funlock" fpoints="5">
+        RM releases locks before final commit.
+    </test>
+
+    new tests
+    concurrency tests
+    <test id="T_L_WR" fpoints="0">
+        1. add.. should acquire all necessary locks.
+        2. query.. should wait locks first and then read data from disk.
+    </test>
+
+    <test id="T_L_RRWW" fpoints="0">
+        dead lock. 1 read A, 2 read A, 1 write A, 2 write A.
+        This maybe not passed by current lock implementation.
+    </test>
+
+    <test id="T_L_RRWW_PASS" fpoints="0">
+        dead lock. 1 read A, 2 read A, 1 write A, 2 write A.
+        if 1 or 2 is aborted, the other should be processed.
+        But actually the lock is based on time. 1 will be abort first, and then 2
+        will be abort because 1 and 2 wait the lock almost at the same time.
+    </test>
 
     <test id="T_L_RRWW_WAIT" fpoints="0">
         dead lock. 1 read A, 2 read A, 1 write A, (wait 1 dead lock), 2 write A.
