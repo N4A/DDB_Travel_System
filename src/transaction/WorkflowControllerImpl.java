@@ -477,24 +477,7 @@ public class WorkflowControllerImpl
         int total_bill = 0;
         for (ResourceItem re : results) {
             Reservation rvt = (Reservation) re;
-            String resvKey = rvt.getResvKey();
-            switch (rvt.getResvType()) {
-                case Reservation.RESERVATION_TYPE_FLIGHT: {
-                    Flight f = (Flight) queryItem(rmFlights, xid, resvKey);
-                    total_bill += f.getPrice();
-                    break;
-                }
-                case Reservation.RESERVATION_TYPE_CAR: {
-                    Car c = (Car) queryItem(rmCars, xid, resvKey);
-                    total_bill += c.getPrice();
-                    break;
-                }
-                case Reservation.RESERVATION_TYPE_HOTEL: {
-                    Hotel h = (Hotel) queryItem(rmRooms, xid, resvKey);
-                    total_bill += h.getPrice();
-                    break;
-                }
-            }
+            total_bill += rvt.getPrice();
         }
         return total_bill;
     }
@@ -515,7 +498,7 @@ public class WorkflowControllerImpl
         Flight f = (Flight) flight;
         if (f.getNumAvail() <= 0)
             return false;
-        Reservation reserv = new Reservation(custName, Reservation.RESERVATION_TYPE_FLIGHT, flightNum);
+        Reservation reserv = new Reservation(custName, Reservation.RESERVATION_TYPE_FLIGHT, flightNum, f.getPrice());
         try {
             rmCustomers.insert(xid, ResourceManager.TableNameReservations, reserv);
             f.bookSeats(1);
@@ -543,7 +526,7 @@ public class WorkflowControllerImpl
         Car c = (Car) car;
         if (c.getNumAvail() <= 0)
             return false;
-        Reservation reserv = new Reservation(custName, Reservation.RESERVATION_TYPE_CAR, location);
+        Reservation reserv = new Reservation(custName, Reservation.RESERVATION_TYPE_CAR, location, c.getPrice());
         try {
             rmCustomers.insert(xid, ResourceManager.TableNameReservations, reserv);
             c.bookCars(1);
@@ -574,7 +557,7 @@ public class WorkflowControllerImpl
         Hotel h = (Hotel) hotel;
         if (h.getNumAvail() <= 0)
             return false;
-        Reservation reserv = new Reservation(custName, Reservation.RESERVATION_TYPE_HOTEL, location);
+        Reservation reserv = new Reservation(custName, Reservation.RESERVATION_TYPE_HOTEL, location, h.getPrice());
         try {
             rmCustomers.insert(xid, ResourceManager.TableNameReservations, reserv);
             h.bookRooms(1);

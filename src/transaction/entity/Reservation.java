@@ -22,12 +22,15 @@ public class Reservation extends ResourceItem {
 
     private String resvKey;
 
+    private int price;
+
     private boolean isdeleted = false;
 
-    public Reservation(String custName, int resvType, String resvKey) {
+    public Reservation(String custName, int resvType, String resvKey, int price) {
         this.custName = custName;
         this.resvType = resvType;
         this.resvKey = resvKey;
+        this.price = price;
     }
 
     public Object getIndex(String indexName) throws InvalidIndexException {
@@ -66,8 +69,12 @@ public class Reservation extends ResourceItem {
 
     public Object clone() {
         Reservation o = new Reservation(getCustName(), getResvType(),
-                getResvKey());
+                getResvKey(), getPrice());
         o.isdeleted = isdeleted;
         return o;
+    }
+
+    public int getPrice() {
+        return price;
     }
 }
