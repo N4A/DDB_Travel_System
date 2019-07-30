@@ -1,0 +1,24 @@
+1
+1 call start
+1 return
+1 call addFlight xid "SFly" 10 900
+1 return true
+1 call newCustomer xid "Jack"
+1 return true
+1 call addRooms xid "SH" 10 100
+1 return true
+1 call addCars xid "SH" 10 15
+1 return true
+1 call reserveFlight xid "Jack" "SFly"
+1 return true
+1 call reserveCar xid "Jack" "SH"
+1 return true
+1 call reserveRoom xid "Jack" "SH"
+1 return true
+1 call deleteFlight xid "SFly"
+1 return false
+1 call deleteRooms xid "SH" 10
+1 return false
+1 call deleteCars xid "SH" 10
+1 return false
+1 exit

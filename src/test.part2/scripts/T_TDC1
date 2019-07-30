@@ -1,0 +1,28 @@
+1
+1 call start
+1 return
+1 call newCustomer xid "John"
+1 return true
+1 call addRooms xid "Stanford" 200 150
+1 return true
+1 call commit xid
+1 return true
+1 call start
+1 return
+1 call reserveRoom xid "John" "Stanford"
+1 return true
+1 call commit xid
+1 return true
+1 call start
+1 return
+1 call queryCustomerBill xid "John"
+1 return 150
+1 call deleteCustomer xid "John"
+1 return true
+1 call commit xid
+1 return true
+1 call start
+1 return
+1 call queryCustomerBill xid "John"
+1 return -1
+1 exit

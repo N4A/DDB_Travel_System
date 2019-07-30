@@ -1,0 +1,26 @@
+2
+1 call start
+1 return
+1 call addFlight xid "SFly" 20 900
+1 return true
+1 call commit xid
+1 return true
+1 call start
+1 return
+1 call addFlight xid "SFly" 20 950
+1 return true
+2 call start
+2 return
+2 call addFlight xid "SFly" 40 850
+2 except transaction.TransactionAbortedException
+1 call queryFlight xid "SFly"
+1 return 40
+1 call commit xid
+1 return true
+2 call start
+2 return
+2 call addFlight xid "SFly" 40 850
+2 return true
+2 call queryFlight xid "SFly"
+2 return 80
+2 exit

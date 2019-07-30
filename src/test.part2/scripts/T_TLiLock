@@ -1,0 +1,42 @@
+3
+1 call start
+1 return
+1 call addCars xid "SFO" 300 30
+1 return true
+1 call addFlight xid "347" 100 310
+1 return true
+1 call addRooms xid "Stanford" 200 150
+1 return true
+1 call commit xid
+1 return true
+1 call start
+1 return
+2 call start
+2 return
+3 call start
+3 return
+1 call addCars xid "SFO" 300 40
+1 return true
+2 call addRooms xid "Stanford" 200 160
+2 return true
+3 call addFlight xid "347" 100 400
+3 return true
+2 call commit xid
+2 return true
+2 call start
+2 return
+1 call queryRoomsPrice xid "Stanford"
+1 return 160
+3 call commit xid
+3 return true
+3 call start
+3 return
+2 call queryFlightPrice xid "347"
+2 return 400
+1 call commit xid
+1 return true
+1 call start
+1 return
+3 call queryCarsPrice xid "SFO"
+3 return 40
+3 exit

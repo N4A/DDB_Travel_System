@@ -10,6 +10,7 @@ build/
 
 # temp ppt
 doc/~$*.ppt
+*.tmp
 
 # Compiled class file
 */*/*.class

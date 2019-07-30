@@ -101,8 +101,9 @@ public class TransactionManagerImpl
             synchronized (xids_to_be_recovered) {
                 if (num > 1)
                     xids_to_be_recovered.put(xid, num - 1);
-                else
-                    xids_to_be_recovered.remove(xid);
+//                else
+//                    // do not remove this transaction id if rm dies after receiving the committed message.
+//                    xids_to_be_recovered.remove(xid);
                 utils.storeObject(xids_to_be_recovered, xidsToBeRecoveredPath);
             }
             return COMMITTED;

@@ -159,8 +159,8 @@
         RM releases locks before final commit.
     </test>
 
-    new tests
-    concurrency tests
+    <!--    new tests-->
+    <!--    concurrency tests-->
     <test id="T_L_WR" fpoints="0">
         1. add.. should acquire all necessary locks.
         2. query.. should wait locks first and then read data from disk.
@@ -182,4 +182,69 @@
         dead lock. 1 read A, 2 read A, 1 write A, (wait 1 dead lock), 2 write A.
     </test>
 
+    <test id="T_Atom1" fpoints="0">
+        Transaction Atom test.
+        Transaction should not be executed if not complete.
+    </test>
+
+    <test id="T_SABQ" fpoints="0">
+        Semantic test add operation between query.
+        Reservation should record the price.
+    </test>
+
+    <test id="T_Atom2" fpoints="0">
+        Transaction Atom test.
+        Transaction should be executed completely if no exception.
+    </test>
+
+    <test id="T_Consistency" fpoints="0">
+        Transaction Consistency test.
+        Whether reservation happens or not, the total num of rooms in a location should be consist.
+    </test>
+
+    <test id="T_Isolation" fpoints="0">
+        Transaction Isolation test.
+        The change on flight in different transactions should be executed separately.
+    </test>
+
+    <test id="T_TDC1" fpoints="0">
+        Test for Transaction Delete Customer.
+    </test>
+
+    <test id="T_TDCAb" fpoints="0">
+        Test for Transaction Delete Customer then abort and add new Customer,query the customer before the abort and
+        after the abort.
+    </test>
+
+    <test id="T_TDCN" fpoints="0">
+        Test for Transaction Delete Customer then add new Customer of same name,query the customer between the first add
+        and the first delete it, then query the customer between the first delete and the second add.
+    </test>
+
+    <test id="T_Durability" fpoints="0">
+        Transaction Durability test.
+        After transaction finished, it won't roll back without a reasonable reason.
+    </test>
+
+    <test id="T_2kill13" fpoints="0">
+        The tri-thread version of WWWW.When deadlock detected,the thread should dispose it's resources.
+        first thread 1 get car and room,thread 3 get flight,then thread 1 ask for flight and kill itself due to deadlock
+        detected,
+        then thread 2 get the legacy of thread 1--get the room,and later thread 3 ask for the room and kill itself, at
+        last,thread 2 get success.
+    </test>
+
+    <test id="T_Border" fpoints="0">
+        Test border condition.
+    </test>
+
+    <test id="T_Limit" fpoints="0">
+        Test the limit condition when deleting flight, rooms or cars.
+    </test>
+
+    <test id="T_TLiLock" fpoints="0">
+        Tring to test "livelock".
+        First,three thread get three different resources,if they want to get more resources,there will be a
+        "deadlock",we tring to let some thread commit first which make some resources available and solve the livelock.
+    </test>
 </tests>

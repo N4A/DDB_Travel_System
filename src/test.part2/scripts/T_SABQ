@@ -1,0 +1,29 @@
+1
+1 call start
+1 return
+1 call addFlight xid "347" 100 310
+1 return true
+1 call newCustomer xid "John"
+1 return true
+1 call commit xid
+1 return true
+1 call start
+1 return
+1 call reserveFlight xid "John" "347"
+1 return true
+1 call commit xid
+1 return true
+1 call start
+1 return
+1 call queryCustomerBill xid "John"
+1 return 310
+1 call addFlight xid "347" 100 400
+1 return true
+1 call commit xid
+1 return true
+1 call start
+1 return
+1 call queryCustomerBill xid "John"
+1 return 310
+1 exit
+
